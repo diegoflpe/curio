@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lojas — Curió Promos</title>
+
+  <!-- PWA / App Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Curió Promos">
+  <link rel="apple-touch-icon" href="assets/img/curio.png">
+  <meta name="theme-color" content="#0F2A4A">
+
+  <link rel="icon" type="image/png" href="assets/img/curio.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+          <img src="assets/img/curio.png" alt="Curió Promos">
+
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="promocoes.html"><i data-lucide="tag"></i> Promoções</a>
+        <a href="categorias.html"><i data-lucide="folder"></i> Categorias</a>
+        <a href="lojas.html" class="ativo"><i data-lucide="store"></i> Lojas</a>
+        <a href="templates.html"><i data-lucide="message-square"></i> Templates</a>
+        <a href="historico.html"><i data-lucide="history"></i> Histórico</a>
+        <a href="backup.html"><i data-lucide="database"></i> Backup</a>
+        <a href="configuracoes.html"><i data-lucide="settings"></i> Configurações</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <span class="user-email" id="user-email">—</span>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-block" style="color:rgba(255,255,255,0.7);" id="btn-logout">
+          <i data-lucide="log-out"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menu-toggle"><i data-lucide="menu"></i></button>
+          <span class="topbar-title">Lojas</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" id="btn-nova-loja">
+            <i data-lucide="plus"></i> Nova loja
+          </button>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <h1>Lojas</h1>
+            <p class="text-muted" id="contador-lojas">Carregando...</p>
+          </div>
+        </div>
+
+        <div id="lista-lojas">
+          <div class="loading-overlay"><div class="spinner"></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal de loja -->
+  <div class="modal-overlay hidden" id="modal-loja">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-loja-titulo">Nova loja</h3>
+        <button class="btn btn-ghost btn-sm" id="modal-loja-fechar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-loja">
+        <div class="form-group">
+          <label for="loja-nome">Nome da loja *</label>
+          <input type="text" id="loja-nome" class="form-control" required maxlength="60" autocomplete="off">
+        </div>
+        <div class="flex gap-sm" style="justify-content:flex-end;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" id="modal-loja-cancelar">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="modal-loja-salvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/lojas.js"></script>
+  <script>
+    CurioAuth.protegerPagina().then(async (user) => {
+      if (!user) return;
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
+      document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
+      await CurioLojas.init();
+    });
+  </script>
+</body>
+</html>

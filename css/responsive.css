@@ -1,0 +1,81 @@
+/* ============================================================
+   CURIÓ PROMOS — RESPONSIVIDADE E MOBILE APP
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* ---------- LAYOUT E NAVEGAÇÃO ---------- */
+  .sidebar { transform: translateX(-100%); width: 280px; box-shadow: none; }
+  .sidebar.aberta { transform: translateX(0); box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2); }
+  .main-content { margin-left: 0; }
+  .menu-toggle { display: flex; }
+  
+  .topbar { 
+    padding: 0.75rem 1rem; 
+    /* Ajuste para a barra de status do iPhone (notch) */
+    padding-top: calc(0.75rem + env(safe-area-inset-top)); 
+  }
+  .topbar-title { font-size: 1rem; }
+  
+  .page-content { padding: 1rem; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .page-header h1 { font-size: 1.25rem; }
+  
+  /* ---------- CARDS E GRIDS ---------- */
+  .cards-grid { grid-template-columns: 1fr !important; }
+  .form-grid, .filtros-grid, .grid-divulgar { grid-template-columns: 1fr !important; }
+
+  /* ---------- TABELAS ---------- */
+  table { font-size: 0.8125rem; }
+  thead th, tbody td { padding: 0.625rem 0.75rem; }
+
+  /* ---------- COMPONENTES ---------- */
+  .login-card { padding: 2rem 1.5rem; }
+  .toast-container { left: 1rem; right: 1rem; }
+  .toast { max-width: 100%; }
+  .modal { max-width: 100%; padding: 1.25rem; }
+
+  /* ---------- COMPORTAMENTO DE APP (iOS/MOBILE) ---------- */
+  
+  /* 1. Evita o Zoom automático do iOS ao clicar nos inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* 2. Remove o flash azul/transparente ao tocar nos elementos */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 3. Melhora a sensação de toque nos botões (efeito de apertar) */
+  .btn:active, 
+  .sidebar-nav a:active,
+  .card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+  }
+
+  /* 4. Respeita a barra de gestos do iPhone no rodapé */
+  .page-content {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ---------- TABLET (769px a 1024px) ---------- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar { width: 220px; }
+  .main-content { margin-left: 220px; }
+  .page-content { padding: 1.25rem; }
+  .cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ---------- DESKTOP GRANDE (Acima de 1280px) ---------- */
+@media (min-width: 1280px) {
+  .page-content { padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Curió Promos",
+  "short_name": "Curió",
+  "description": "Sistema de gerenciamento e divulgação de ofertas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0F2A4A",
+  "theme_color": "#0F2A4A",
+  "icons": [
+    {
+      "src": "assets/img/curio.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/curio.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

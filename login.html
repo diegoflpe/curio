@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — Curió Promos</title>
+
+  <!-- PWA / App Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Curió Promos">
+  <link rel="apple-touch-icon" href="assets/img/curio.png">
+  <meta name="theme-color" content="#0F2A4A">
+
+  <link rel="icon" type="image/png" href="assets/img/curio.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="login-page">
+
+  <!-- Botão de Tema Flutuante -->
+  <button id="theme-login-btn" class="btn-theme" style="position:fixed; top:20px; right:20px; z-index:1000;"></button>
+
+  <div class="login-card">
+    <div class="login-logo">
+  <img src="assets/img/curio.png" alt="Curió Promos">
+</div>
+
+    <h1>Acesso administrativo</h1>
+    <p class="subtitulo">Entre com sua conta para gerenciar as promoções</p>
+
+    <form id="login-form" novalidate>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" class="form-control" placeholder="seu@email.com" autocomplete="email" required>
+        <span class="form-erro" id="email-erro">Informe um e-mail válido.</span>
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" class="form-control" placeholder="Sua senha" autocomplete="current-password" required>
+        <span class="form-erro" id="senha-erro">Informe sua senha.</span>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="btn-entrar">Entrar</button>
+    </form>
+    <p class="text-muted text-small" style="text-align:center; margin-top: 1.5rem;">Acesso restrito ao administrador.</p>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Lógica do Tema no Login
+    const themeBtn = document.getElementById('theme-login-btn');
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark') document.body.classList.add('dark-mode');
+    
+    themeBtn.innerHTML = currentTheme === 'dark' ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+    lucide.createIcons();
+
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      themeBtn.innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+      lucide.createIcons();
+    });
+
+    // Lógica de Login
+    const form = document.getElementById('login-form');
+    const emailInput = document.getElementById('email');
+    const senhaInput = document.getElementById('senha');
+    const emailErro = document.getElementById('email-erro');
+    const senhaErro = document.getElementById('senha-erro');
+    const btnEntrar = document.getElementById('btn-entrar');
+
+    auth.onAuthStateChanged((user) => { if (user) window.location.href = 'index.html'; });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let valido = true;
+      const email = emailInput.value.trim();
+      if (!email || !CurioUtils.validarEmail(email)) { emailInput.classList.add('erro'); emailErro.classList.add('visivel'); valido = false; } 
+      else { emailInput.classList.remove('erro'); emailErro.classList.remove('visivel'); }
+
+      const senha = senhaInput.value;
+      if (!senha || senha.length < 6) { senhaInput.classList.add('erro'); senhaErro.classList.add('visivel'); valido = false; } 
+      else { senhaInput.classList.remove('erro'); senhaErro.classList.remove('visivel'); }
+
+      if (!valido) return;
+      btnEntrar.disabled = true; btnEntrar.textContent = 'Entrando...';
+
+      try {
+        await auth.signInWithEmailAndPassword(email, senha);
+      } catch (error) {
+        btnEntrar.disabled = false; btnEntrar.textContent = 'Entrar';
+        let msg = 'Erro ao entrar. Verifique suas credenciais.';
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') msg = 'E-mail ou senha incorretos.';
+        else if (error.code === 'auth/too-many-requests') msg = 'Muitas tentativas. Aguarde.';
+        CurioUtils.toast(msg, 'erro');
+      }
+    });
+
+    [emailInput, senhaInput].forEach(input => {
+      input.addEventListener('input', () => {
+        input.classList.remove('erro');
+        const erro = input.id === 'email' ? emailErro : senhaErro;
+        erro.classList.remove('visivel');
+      });
+    });
+  </script>
+</body>
+</html>

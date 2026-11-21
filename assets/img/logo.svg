@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <!-- Símbolo: pássaro + tag -->
+  <rect x="4" y="8" width="44" height="44" rx="12" fill="#0F2A4A"/>
+  <path d="M18 34c0-7 5-12 12-12 4 0 7 1.5 9 4l-5 3c-1-1-2.5-2-4-2-4 0-6 3-6 7 0 4 2 7 6 7 1.5 0 3-1 4-2l5 3c-2 2.5-5 4-9 4-7 0-12-5-12-12z" fill="#FFFFFF"/>
+  <path d="M35 18l4-4 6 6-4 4z" fill="#25D366"/>
+  <!-- Texto -->
+  <text x="58" y="32" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#0F2A4A">Curió</text>
+  <text x="128" y="32" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="22" font-weight="400" fill="#25D366">Promos</text>
+</svg>

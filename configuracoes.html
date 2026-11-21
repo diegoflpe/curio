@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações — Curió Promos</title>
+
+  <!-- PWA / App Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Curió Promos">
+  <link rel="apple-touch-icon" href="assets/img/curio.png">
+  <meta name="theme-color" content="#0F2A4A">
+
+  <link rel="icon" type="image/png" href="assets/img/curio.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+          <img src="assets/img/curio.png" alt="Curió Promos">
+
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="promocoes.html"><i data-lucide="tag"></i> Promoções</a>
+        <a href="categorias.html"><i data-lucide="folder"></i> Categorias</a>
+        <a href="lojas.html"><i data-lucide="store"></i> Lojas</a>
+        <a href="templates.html"><i data-lucide="message-square"></i> Templates</a>
+        <a href="historico.html"><i data-lucide="history"></i> Histórico</a>
+        <a href="backup.html"><i data-lucide="database"></i> Backup</a>
+        <a href="configuracoes.html" class="ativo"><i data-lucide="settings"></i> Configurações</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <span class="user-email" id="user-email">—</span>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-block" style="color:rgba(255,255,255,0.7);" id="btn-logout">
+          <i data-lucide="log-out"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menu-toggle"><i data-lucide="menu"></i></button>
+          <span class="topbar-title">Configurações</span>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <h1>Configurações</h1>
+            <p class="text-muted">Preferências da aplicação.</p>
+          </div>
+        </div>
+
+        <form id="form-config" style="max-width:720px;">
+
+          <!-- APP -->
+          <div class="card" style="margin-bottom:1rem;">
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Aplicativo</h3>
+            <div class="form-group">
+              <label for="nomeApp">Nome do aplicativo</label>
+              <input type="text" id="nomeApp" class="form-control" maxlength="60" required>
+            </div>
+          </div>
+
+          <!-- TEMPLATE PADRÃO -->
+          <div class="card" style="margin-bottom:1rem;">
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Divulgação</h3>
+            <div class="form-group">
+              <label for="templatePadraoId">Template padrão</label>
+              <select id="templatePadraoId" class="form-control">
+                <option value="">— Nenhum —</option>
+              </select>
+              <span class="text-small text-muted">
+                Este template será pré-selecionado ao abrir a tela de divulgação.
+              </span>
+            </div>
+          </div>
+
+          <!-- PREFERÊNCIAS -->
+          <div class="card" style="margin-bottom:1rem;">
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Preferências visuais</h3>
+            <div class="form-group">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="mostrarImagensCards" style="width:auto;">
+                <span>Exibir imagens nos cards de promoção</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="confirmarExclusao" style="width:auto;">
+                <span>Pedir confirmação antes de excluir</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- INFO -->
+          <div class="card" style="margin-bottom:1rem;">
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Informações</h3>
+            <div style="display:grid;gap:0.5rem;font-size:0.875rem;">
+              <div class="flex-between">
+                <span class="text-muted">Versão do app</span>
+                <span style="font-weight:600;">1.0</span>
+              </div>
+              <div class="flex-between">
+                <span class="text-muted">Backend</span>
+                <span>Firebase Firestore (Spark)</span>
+              </div>
+              <div class="flex-between">
+                <span class="text-muted">Autenticação</span>
+                <span id="info-usuario">—</span>
+              </div>
+              <div class="flex-between">
+                <span class="text-muted">Projeto</span>
+                <span id="info-projeto">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-sm" style="justify-content:flex-end;">
+            <button type="submit" class="btn btn-primary" id="btn-salvar-config">
+              <i data-lucide="check"></i> Salvar configurações
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/configuracoes.js"></script>
+  <script>
+    CurioAuth.protegerPagina().then(async (user) => {
+      if (!user) return;
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
+      document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
+      await CurioConfig.init(user);
+    });
+  </script>
+</body>
+</html>

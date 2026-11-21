@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Ofertas — Curió Promos</title>
+
+  <!-- PWA / App Mobile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Curió Promos">
+  <link rel="apple-touch-icon" href="assets/img/curio.png">
+  <meta name="theme-color" content="#0F2A4A">
+
+  <link rel="icon" type="image/png" href="assets/img/curio.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+          <img src="assets/img/curio.png" alt="Curió Promos">
+
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="promocoes.html" class="ativo"><i data-lucide="tag"></i> Promoções</a>
+        <a href="categorias.html"><i data-lucide="folder"></i> Categorias</a>
+        <a href="lojas.html"><i data-lucide="store"></i> Lojas</a>
+        <a href="templates.html"><i data-lucide="message-square"></i> Templates</a>
+        <a href="historico.html"><i data-lucide="history"></i> Histórico</a>
+        <a href="backup.html"><i data-lucide="database"></i> Backup</a>
+        <a href="configuracoes.html"><i data-lucide="settings"></i> Configurações</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <span class="user-email" id="user-email">—</span>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-block" style="color:rgba(255,255,255,0.7);" id="btn-logout">
+          <i data-lucide="log-out"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menu-toggle"><i data-lucide="menu"></i></button>
+          <a href="promocoes.html" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i></a>
+          <span class="topbar-title" id="form-titulo">Gerar Oferta</span>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <form id="form-promocao" style="max-width:800px;">
+          
+          <!-- LINK E BUSCA -->
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label for="linkOferta">
+                🔗 Link da Oferta
+                <span id="badge-loja-detectada" class="badge hidden" style="margin-left:0.5rem;"></span>
+              </label>
+              <div style="display:flex;gap:0.5rem;">
+                <input type="url" id="linkOferta" class="form-control" required placeholder="Cole o link da Amazon, Shopee, Mercado Livre..." style="flex:1;">
+                <button type="button" class="btn btn-outline btn-sm" id="btn-colar-link" title="Colar link">
+                  <i data-lucide="clipboard"></i>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-buscar-dados" title="Buscar título, imagem e preço">
+                  <i data-lucide="search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="produto">Aa Título do Produto *</label>
+              <input type="text" id="produto" class="form-control" required maxlength="120" placeholder="Ex: Echo Dot (5ª geração)...">
+            </div>
+            <div class="form-group">
+              <label for="imagemUrl">URL da Imagem</label>
+              <input type="url" id="imagemUrl" class="form-control" placeholder="https://...">
+              <div id="preview-imagem" style="margin-top:0.5rem;"></div>
+            </div>
+          </div>
+
+          <!-- COMENTÁRIO -->
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label for="comentarioPessoal">💬 Comentário Pessoal (Vai na 1ª linha)</label>
+              <textarea id="comentarioPessoal" class="form-control" rows="2" maxlength="200" placeholder="Ex: ACHADINHO DO DIA! Corre que é por tempo limitado."></textarea>
+            </div>
+            <div class="flex gap-sm" style="flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="🔥 ACHADINHO DO DIA! Corre que é por tempo limitado!">🔥 Achadinho</button>
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="🚨 PREÇO BAIXOU! Aproveita agora!">🚨 Baixou</button>
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="⚡ PROMOÇÃO RELÂMPAGO! Só hoje!">⚡ Relâmpago</button>
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="🎁 ACHADO NO MERCADO LIVRE!">🎁 Achado ML</button>
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="💸 TÁ DE GRAÇA! Olha esse preço!">💸 Barato</button>
+              <button type="button" class="btn btn-outline btn-sm" data-comentario="👀 OLHA ISSO! Que oportunidade!">👀 Olha isso</button>
+            </div>
+          </div>
+
+          <!-- PREÇOS E EXTRAS -->
+          <div class="card" style="margin-bottom:1rem;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="form-grid">
+              <div class="form-group">
+                <label>Preço Atual (R$) *</label>
+                <input type="number" id="precoPromocional" class="form-control" step="0.01" min="0" required placeholder="299.00">
+              </div>
+              <div class="form-group">
+                <label>Preço Antigo (R$) — fica riscado</label>
+                <input type="number" id="precoOriginal" class="form-control" step="0.01" min="0" placeholder="499.00">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top:0.5rem;margin-bottom:1rem;">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;font-weight:600;color:var(--azul-marinho);">
+                <input type="checkbox" id="isPix" style="width:18px;height:18px;">
+                💠 Preço no Pix?
+              </label>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="form-grid">
+              <div class="form-group">
+                <label>Cupom (Opcional)</label>
+                <input type="text" id="cupom" class="form-control" placeholder="Ex: PROMO10" style="text-transform:uppercase;">
+              </div>
+              <div class="form-group">
+                <label>Preço c/ Cupom (Opcional)</label>
+                <input type="number" id="precoComCupom" class="form-control" step="0.01" min="0" placeholder="99.99">
+              </div>
+            </div>
+          </div>
+
+          <!-- FLAGS SHOPEE / AMAZON -->
+          <div class="card" style="margin-bottom:1rem;" id="card-flags">
+            <div class="form-group hidden" id="flag-shopee">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirCuponsShopee" style="width:18px;height:18px;">
+                <span>🎟️ Incluir cupons Shopee (abaixo do link)</span>
+              </label>
+            </div>
+            <div class="form-group hidden" id="flag-amazon-programe">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirProgramePoupe" style="width:18px;height:18px;">
+                <span>💰 Incluir "Programe e Poupe" (abaixo do link)</span>
+              </label>
+            </div>
+            <div class="form-group hidden" id="flag-amazon-prime">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirPrime" style="width:18px;height:18px;">
+                <span>🚚 Incluir Frete Grátis Prime (abaixo do link)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- CATEGORIA E TEMPLATE -->
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label>Categoria *</label>
+              <select id="categoria" class="form-control" required>
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modelo de Mensagem (Template)</label>
+              <select id="select-template" class="form-control"></select>
+            </div>
+          </div>
+
+          <!-- BOTÃO GERAR -->
+          <button type="submit" class="btn btn-primary btn-block" id="btn-gerar" style="font-size:1.1rem;padding:1rem;margin-bottom:2rem;">
+            <i data-lucide="sparkles"></i> Gerar e Salvar Anúncio
+          </button>
+        </form>
+
+        <!-- RESULTADO -->
+        <div id="resultado-area" class="card hidden" style="border:2px solid var(--verde-whats); background:#F8FAFC; max-width:800px;">
+          <h3 style="margin-bottom:1rem;color:var(--azul-marinho);">Anúncio Gerado com Sucesso!</h3>
+          <div class="result-box" id="result-box"></div>
+          
+          <div class="flex gap-sm" style="margin-top:1.5rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline" id="btn-copiar" style="flex:1;">
+              <i data-lucide="copy"></i> Copiar e Limpar Tela
+            </button>
+            <button type="button" class="btn btn-whatsapp" id="btn-whatsapp" style="flex:1;">
+              <i data-lucide="message-circle"></i> Abrir WhatsApp
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/divulgacao.js"></script>
+  <script src="js/promocao-form.js"></script>
+  <script>
+    CurioAuth.protegerPagina().then(async (user) => {
+      if (!user) return;
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
+      document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
+      await CurioForm.init();
+    });
+  </script>
+</body>
+</html>
