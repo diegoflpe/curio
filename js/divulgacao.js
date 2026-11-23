@@ -1,6 +1,6 @@
 /* ============================================================
    CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO
-   Gera mensagens e organiza a ordem das informações.
+   Gera mensagens a partir de templates + dados de promoção.
    ============================================================ */
 
 const CurioDivulgacao = (() => {
@@ -52,45 +52,43 @@ https://link.amazon/B09yJ3i1Z`
     };
   }
 
-    // ---------- GERAÇÃO ----------
+  // ---------- GERAÇÃO ----------
   function gerar(templateConteudo, promocao) {
     let msg = aplicarVariaveis(templateConteudo, dadosDaPromocao(promocao));
 
-    // Remove o fechamento padrão do template temporariamente
-    const fraseFinal = "⚡ Aproveite! Condição especial por tempo limitado.";
-    msg = msg.replace(fraseFinal, '').trim();
-
-    // Se o template NÃO contém {comentario}, adiciona no topo
+    // Se o template NÃO contém {comentario} mas a promoção tem comentário,
+    // adiciona no topo automaticamente.
     if (promocao.comentarioPessoal && !templateConteudo.includes('{comentario}')) {
       msg = `${promocao.comentarioPessoal}\n\n${msg}`;
     }
 
-    // Adiciona Pix/Cupom
+    // Adiciona Pix/Cupom se o template não os menciona
     const extras = [];
     if (promocao.precoPix && !templateConteudo.includes('{preco_pix}')) {
       extras.push(`💠 Preço no Pix: ${CurioUtils.formatarMoeda(promocao.precoPix)}`);
     }
     if (promocao.cupom && !templateConteudo.includes('{cupom}')) {
-      // AQUI ESTÁ O AJUSTE DO CUPOM EM CÓDIGO INLINE
-      let linha = 🎟️ Cupom: \`${promocao.cupom}\`;
-      if (promocao.precoComCupom) linha += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
+      // AJUSTE 1: Cupom com código inline (apenas o nome do cupom)
+      let linha = `🎟️ Cupom: \`${promocao.cupom}\``;
+      if (promocao.precoComCupom) {
+        linha += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
+      }
       extras.push(linha);
     }
     if (extras.length) {
       msg += `\n\n${extras.join('\n')}`;
     }
 
-    // Complementos por loja (Inseridos ANTES da frase final)
+    // Complementos por loja
     const loja = (promocao.lojaNome || '').toLowerCase();
     
+    // AJUSTE 2: Compre aqui 👇 antes do link da Shopee
     if (loja.includes('shopee')) {
-      // AQUI ESTÁ O AJUSTE DO "COMPRE AQUI" DA SHOPEE
-      // Como o template padrão usa 👉 {link}, nós substituímos o 👉 por "Compre aqui 👇"
-      if (msg.includes(`👉 ${promocao.linkAfiliado || promocao.linkOferta}`)) {
-        msg = msg.replace(`👉 ${promocao.linkAfiliado || promocao.linkOferta}`, `Compre aqui 👇\n${promocao.linkAfiliado || promocao.linkOferta}`);
-      } else if (msg.includes(promocao.linkAfiliado || promocao.linkOferta)) {
-        // Fallback caso o template não use o emoji
-        msg = msg.replace(promocao.linkAfiliado || promocao.linkOferta, `Compre aqui 👇\n${promocao.linkAfiliado || promocao.linkOferta}`);
+      const linkFormatado = promocao.linkAfiliado || promocao.linkOferta;
+      if (msg.includes(`👉 ${linkFormatado}`)) {
+        msg = msg.replace(`👉 ${linkFormatado}`, `Compre aqui 👇\n${linkFormatado}`);
+      } else if (msg.includes(linkFormatado)) {
+        msg = msg.replace(linkFormatado, `Compre aqui 👇\n${linkFormatado}`);
       }
 
       if (promocao.incluirCuponsShopee) {
@@ -107,13 +105,9 @@ https://link.amazon/B09yJ3i1Z`
       }
     }
 
-    // Adiciona a frase final novamente no final de TUDO
-    msg += `\n\n${fraseFinal}`;
-
     return msg.trim();
   }
 
-  // ---------- AÇÕES ----------
   function abrirWhatsApp(mensagem) {
     const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank', 'noopener');
