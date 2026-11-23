@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (FORMULÁRIO BLINDADO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO DEFINITIVA)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -30,13 +30,15 @@ const CurioForm = (() => {
     const url = $('linkOferta').value;
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (url && lojaDetectada !== 'Outras') {
-      badge.textContent = lojaDetectada;
-      badge.className = 'badge badge-divulgada';
-      badge.style.marginLeft = '0.5rem';
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
+    if (badge) {
+      if (url && lojaDetectada !== 'Outras') {
+        badge.textContent = lojaDetectada;
+        badge.className = 'badge badge-divulgada';
+        badge.style.marginLeft = '0.5rem';
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
     }
   }
 
@@ -204,13 +206,12 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      if (typeof CurioDB === 'undefined') throw new Error("CurioDB não carregou. Verifique o db.js.");
-      if (typeof db === 'undefined') throw new Error("Firebase (db) não configurado. Verifique o firebase-config.js.");
-
+      // Carrega os dados
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
+      // Preenche Categorias
       const selCat = $('categoria');
       if (selCat) {
         selCat.innerHTML = '<option value="">Selecione...</option>';
@@ -222,6 +223,7 @@ const CurioForm = (() => {
         });
       }
 
+      // Preenche Templates
       const selTpl = $('select-template');
       if (selTpl) {
         selTpl.innerHTML = '';
@@ -239,6 +241,7 @@ const CurioForm = (() => {
         }
       }
 
+      // Eventos
       $('linkOferta').addEventListener('input', atualizarBadgeLoja);
       $('btn-colar-link').onclick = colarLink;
       $('btn-buscar-dados').onclick = buscarDadosLink;
@@ -253,14 +256,28 @@ const CurioForm = (() => {
 
       bindResultActions();
       $('form-promocao').addEventListener('submit', onSubmit);
+
       if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      console.log("✅ Selects preenchidos na tela com sucesso.");
 
     } catch (e) {
-      console.error(e);
-      // Alerta na tela para sabermos o erro exato
-      alert("Erro ao carregar o formulário:\n\n" + e.message);
+      console.error("❌ Erro no init:", e);
+      // Alerta para vermos o erro real
+      alert("Erro ao montar tela: " + e.message);
     }
   }
+
+  // ---------- EXPOSIÇÃO GLOBAL ----------
+  // Força a inicialização quando o HTML estiver pronto, burlando qualquer falha no arquivo HTML.
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      // Verifica se o CurioAuth já liberou a tela
+      if (firebase.auth().currentUser) {
+        init();
+      }
+    }, 800); 
+  });
 
   return { init };
 })();
