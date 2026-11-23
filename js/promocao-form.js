@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (COMPLETO E CORRIGIDO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO DEFINITIVA)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,7 +9,7 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
-  let carregadoComSucesso = false; // Variável corrigida
+  let carregado = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -47,7 +47,7 @@ const CurioForm = (() => {
           if (padraoT) selTpl.value = padraoT.id;
         }
       }
-      carregadoComSucesso = true;
+      carregado = true;
     } catch (error) {
       console.warn("Aguardando banco de dados...", error);
       setTimeout(carregarSelects, 1500);
@@ -312,13 +312,8 @@ const CurioForm = (() => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
+  // Inicia a função assim que o arquivo carregar
+  init();
+
   return { init };
 })();
-
-// Auto-inicializar caso a página não chame
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    // Usa a variável corrigida
-    if (!carregadoComSucesso && window.CurioForm) CurioForm.init();
-  }, 1000);
-});
