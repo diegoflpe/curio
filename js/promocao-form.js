@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO DEFINITIVA)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (ATUALIZAÇÃO DE STATUS)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,6 +9,7 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
+  let idPromocaoCriada = null; // Armazena o ID para atualizar depois
   let carregado = false;
 
   function $(id) { return document.getElementById(id); }
@@ -60,7 +61,7 @@ const CurioForm = (() => {
     if (!u) return null;
     if (u.includes('shopee.com.br') || u.includes('shope.ee') || u.includes('shopee.com') || u.includes('s.shopee')) return 'Shopee';
     if (u.includes('amazon.com.br') || u.includes('amazon.com') || u.includes('amzn.to') || u.includes('a.co') || u.includes('link.amazon') || u.includes('amzn.eu') || u.includes('amzn.asia')) return 'Amazon';
-    if (u.includes('mercadolivre') || u.includes('mercadolibre') || u.includes('ml.com') || u.includes('mercl')) return 'Mercado Livre';
+    if (u.includes('mercadolivre') || u.includes('mercadolibre') || u.includes('ml.com') || u.includes('mercl') || u.includes('meli.la')) return 'Mercado Livre';
     if (u.includes('magazineluiza') || u.includes('magalu')) return 'Magalu';
     if (u.includes('aliexpress')) return 'AliExpress';
     if (u.includes('casasbahia')) return 'Casas Bahia';
@@ -169,7 +170,7 @@ const CurioForm = (() => {
     }
   }
 
-  // ---------- SUBMIT ----------
+  // ---------- SUBMIT (GERAR E SALVAR) ----------
   async function onSubmit(e) {
     e.preventDefault();
     
@@ -206,17 +207,18 @@ const CurioForm = (() => {
         linkOferta, linkAfiliado: linkOferta, dataValidade: null, observacoes: '',
         status: 'pendente', precoPix: $('isPix').checked ? precoPromocional : null,
         cupom: $('cupom').value.trim().toUpperCase() || '', precoComCupom: parseFloat($('precoComCupom').value) || null,
-        
         incluirCuponsShopee: $('incluirCuponsShopee') ? $('incluirCuponsShopee').checked : false,
         incluirProgramePoupe: $('incluirProgramePoupe') ? $('incluirProgramePoupe').checked : false,
         incluirPrime: $('incluirPrime') ? $('incluirPrime').checked : false,
-        
         comentarioPessoal: $('comentarioPessoal').value.trim()
       };
 
       textoGerado = CurioDivulgacao.gerar(template.conteudo, dados);
-      await CurioDB.criarPromocao(dados);
-
+      
+      // Salva e guarda o ID da promoção
+      const docRef = await CurioDB.criarPromocao(dados);
+      idPromocaoCriada = docRef.id; 
+      
       $('result-box').textContent = textoGerado;
       $('resultado-area').classList.remove('hidden');
       $('resultado-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -259,7 +261,9 @@ const CurioForm = (() => {
       btn.disabled = false; 
       btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
     }
-    textoGerado = ""; lojaDetectada = null;
+    textoGerado = ""; 
+    lojaDetectada = null;
+    idPromocaoCriada = null; // Limpa o ID
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => { if($('linkOferta')) $('linkOferta').focus(); }, 300);
@@ -271,17 +275,36 @@ const CurioForm = (() => {
     if ($('btn-copiar')) {
       $('btn-copiar').onclick = async () => {
         if (!textoGerado) return;
+        
         const ok = await CurioUtils.copiarTexto(textoGerado);
+        
         if (ok) {
-          CurioUtils.toast('Copiado! Limpando para o próximo...', 'sucesso');
+          // AQUI: Atualiza diretamente no Firebase o campo status para "divulgada"
+          if (idPromocaoCriada) {
+            try {
+              await db.collection('promocoes').doc(idPromocaoCriada).update({ status: 'divulgada' });
+            } catch (e) {
+              console.warn("Erro ao atualizar status:", e);
+            }
+          }
+
+          CurioUtils.toast('Copiado! Promoção marcada como divulgada.', 'sucesso');
           setTimeout(resetarFormulario, 300);
         }
       };
     }
 
     if ($('btn-whatsapp')) {
-      $('btn-whatsapp').onclick = () => {
+      $('btn-whatsapp').onclick = async () => {
         if (!textoGerado) return;
+        
+        // Atualiza para divulgada também ao clicar no WhatsApp
+        if (idPromocaoCriada) {
+          try {
+            await db.collection('promocoes').doc(idPromocaoCriada).update({ status: 'divulgada' });
+          } catch (e) { console.warn(e); }
+        }
+        
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textoGerado)}`, '_blank');
         setTimeout(resetarFormulario, 500);
       };
@@ -312,7 +335,6 @@ const CurioForm = (() => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
-  // Inicia a função assim que o arquivo carregar
   init();
 
   return { init };
