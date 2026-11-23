@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (FORMULÁRIO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (FORMULÁRIO BLINDADO)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -204,33 +204,29 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      // 1. Carrega os dados do banco
+      if (typeof CurioDB === 'undefined') throw new Error("CurioDB não carregou. Verifique o db.js.");
+      if (typeof db === 'undefined') throw new Error("Firebase (db) não configurado. Verifique o firebase-config.js.");
+
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
-      // 2. Preenche o Select de Categorias
       const selCat = $('categoria');
       if (selCat) {
         selCat.innerHTML = '<option value="">Selecione...</option>';
-        if (categorias.length === 0) {
-          selCat.innerHTML = '<option value="">Nenhuma categoria cadastrada.</option>';
-        } else {
-          categorias.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.nome;
-            selCat.appendChild(opt);
-          });
-        }
+        categorias.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.nome;
+          selCat.appendChild(opt);
+        });
       }
 
-      // 3. Preenche o Select de Templates
       const selTpl = $('select-template');
       if (selTpl) {
         selTpl.innerHTML = '';
         if (templates.length === 0) {
-          selTpl.innerHTML = '<option value="">Nenhum template. Cadastre em Templates.</option>';
+          selTpl.innerHTML = '<option value="">Nenhum template cadastrado.</option>';
         } else {
           templates.forEach(t => {
             const opt = document.createElement('option');
@@ -243,7 +239,6 @@ const CurioForm = (() => {
         }
       }
 
-      // 4. Eventos
       $('linkOferta').addEventListener('input', atualizarBadgeLoja);
       $('btn-colar-link').onclick = colarLink;
       $('btn-buscar-dados').onclick = buscarDadosLink;
@@ -258,14 +253,12 @@ const CurioForm = (() => {
 
       bindResultActions();
       $('form-promocao').addEventListener('submit', onSubmit);
-
       if (typeof lucide !== 'undefined') lucide.createIcons();
-      
-      console.log("Formulário inicializado com sucesso!", { categorias: categorias.length, templates: templates.length });
 
     } catch (e) {
-      console.error("Erro real no init do formulário:", e);
-      CurioUtils.toast('Erro no banco de dados: ' + e.message, 'erro');
+      console.error(e);
+      // Alerta na tela para sabermos o erro exato
+      alert("Erro ao carregar o formulário:\n\n" + e.message);
     }
   }
 
