@@ -226,7 +226,7 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      // Carrega os dados
+      // Carrega os dados de forma direta
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
@@ -234,7 +234,7 @@ const CurioForm = (() => {
       // Preenche Categorias
       const selCat = $('categoria');
       if (selCat) {
-        selCat.innerHTML = '<option value="">Selecione...</option>'; // Reseta
+        selCat.innerHTML = '<option value="">Selecione...</option>';
         categorias.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
@@ -246,7 +246,7 @@ const CurioForm = (() => {
       // Preenche Templates
       const selTpl = $('select-template');
       if (selTpl) {
-        selTpl.innerHTML = ''; // Reseta
+        selTpl.innerHTML = '';
         if (templates.length === 0) {
           selTpl.innerHTML = '<option value="">Nenhum template. Vá em Templates.</option>';
         } else {
@@ -280,7 +280,7 @@ const CurioForm = (() => {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     } catch (e) {
       console.error("Erro no init:", e);
-      CurioUtils.toast('Erro ao carregar dados. Verifique a internet.', 'erro');
+      CurioUtils.toast('Erro ao carregar dados. Verifique a conexão.', 'erro');
     }
   }
 
