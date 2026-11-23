@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS
+   CURIÓ PROMOS — GERADOR DE OFERTAS (BLINDAGEM TOTAL)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,6 +9,7 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
+  let inicializado = false; // Evita rodar duas vezes
 
   function $(id) { return document.getElementById(id); }
 
@@ -27,16 +28,18 @@ const CurioForm = (() => {
 
   function atualizarBadgeLoja() {
     const badge = $('badge-loja-detectada');
-    const url = $('linkOferta').value;
+    const url = $('linkOferta') ? $('linkOferta').value : '';
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (url && lojaDetectada !== 'Outras') {
-      badge.textContent = lojaDetectada;
-      badge.className = 'badge badge-divulgada';
-      badge.style.marginLeft = '0.5rem';
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
+    if (badge) {
+      if (url && lojaDetectada !== 'Outras') {
+        badge.textContent = lojaDetectada;
+        badge.className = 'badge badge-divulgada';
+        badge.style.marginLeft = '0.5rem';
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
     }
   }
 
@@ -203,13 +206,16 @@ const CurioForm = (() => {
 
   // ---------- INIT ----------
   async function init() {
+    if (inicializado) return; // Evita rodar duas vezes
+    inicializado = true;
+
     try {
-      // Puxa os dados do banco
+      // Carrega os dados
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
-      // Preenche o select de categorias
+      // Preenche Categorias
       const selCat = $('categoria');
       if (selCat) {
         selCat.innerHTML = '<option value="">Selecione...</option>';
@@ -221,12 +227,12 @@ const CurioForm = (() => {
         });
       }
 
-      // Preenche o select de templates
+      // Preenche Templates
       const selTpl = $('select-template');
       if (selTpl) {
         selTpl.innerHTML = '';
         if (templates.length === 0) {
-          selTpl.innerHTML = '<option value="">Nenhum template cadastrado.</option>';
+          selTpl.innerHTML = '<option value="">Nenhum template.</option>';
         } else {
           templates.forEach(t => {
             const opt = document.createElement('option');
@@ -239,28 +245,42 @@ const CurioForm = (() => {
         }
       }
 
-      // Configura os botões e inputs
-      $('linkOferta').addEventListener('input', atualizarBadgeLoja);
-      $('btn-colar-link').onclick = colarLink;
-      $('btn-buscar-dados').onclick = buscarDadosLink;
-      $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
+      // Eventos
+      if ($('linkOferta')) $('linkOferta').addEventListener('input', atualizarBadgeLoja);
+      if ($('btn-colar-link')) $('btn-colar-link').onclick = colarLink;
+      if ($('btn-buscar-dados')) $('btn-buscar-dados').onclick = buscarDadosLink;
+      if ($('cupom')) $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
       
       document.querySelectorAll('[data-comentario]').forEach(btn => {
         btn.onclick = () => {
-          $('comentarioPessoal').value = btn.dataset.comentario;
+          if ($('comentarioPessoal')) $('comentarioPessoal').value = btn.dataset.comentario;
           CurioUtils.toast('Comentário aplicado!', 'sucesso');
         };
       });
 
       bindResultActions();
-      $('form-promocao').addEventListener('submit', onSubmit);
+      if ($('form-promocao')) $('form-promocao').addEventListener('submit', onSubmit);
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
+      console.log("✅ Formulário montado com sucesso!");
 
     } catch (e) {
       console.error("Erro no init:", e);
+      inicializado = false; // Permite tentar de novo se falhar
     }
   }
 
   return { init };
 })();
+
+// Auto-inicialização para garantir que carregue, mesmo se o HTML falhar em chamar.
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!document.getElementById('categoria').innerHTML.includes('option value="')) {
+      console.log("Auto-inicializando o formulário...");
+      if (typeof CurioForm !== 'undefined' && CurioForm.init) {
+        CurioForm.init();
+      }
+    }
+  }, 600);
+});
