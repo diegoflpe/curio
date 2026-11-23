@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (FORMULÁRIO BLINDADO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (FORMULÁRIO)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -30,15 +30,13 @@ const CurioForm = (() => {
     const url = $('linkOferta').value;
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (badge) {
-      if (url && lojaDetectada !== 'Outras') {
-        badge.textContent = lojaDetectada;
-        badge.className = 'badge badge-divulgada';
-        badge.style.marginLeft = '0.5rem';
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
+    if (url && lojaDetectada !== 'Outras') {
+      badge.textContent = lojaDetectada;
+      badge.className = 'badge badge-divulgada';
+      badge.style.marginLeft = '0.5rem';
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
     }
   }
 
@@ -98,13 +96,13 @@ const CurioForm = (() => {
   // ---------- COLAR LINK ----------
   async function colarLink() {
     try {
-        const texto = await navigator.clipboard.readText();
-        $('linkOferta').value = texto;
-        atualizarBadgeLoja();
-        CurioUtils.toast('Link colado!', 'sucesso');
-        await buscarDadosLink();
+      const texto = await navigator.clipboard.readText();
+      $('linkOferta').value = texto;
+      atualizarBadgeLoja();
+      CurioUtils.toast('Link colado!', 'sucesso');
+      await buscarDadosLink();
     } catch {
-        CurioUtils.toast('Permissão negada. Cole manualmente (Ctrl+V).', 'aviso');
+      CurioUtils.toast('Permissão negada. Cole manualmente (Ctrl+V).', 'aviso');
     }
   }
 
@@ -140,13 +138,13 @@ const CurioForm = (() => {
         produto,
         imagemUrl: '',
         descricao: '',
-        precoOriginal: precoOriginal, // Pode ser 0
+        precoOriginal: precoOriginal,
         precoPromocional,
         desconto: CurioUtils.calcularDesconto(precoOriginal || precoPromocional, precoPromocional),
-        lojaId: lojaOpt.id,
-        lojaNome: lojaOpt.nome,
+        lojaId: lojaOpt ? lojaOpt.id : '',
+        lojaNome: lojaOpt ? lojaOpt.nome : 'Outras',
         categoriaId,
-        categoriaNome: catOpt.nome,
+        categoriaNome: catOpt ? catOpt.nome : '',
         linkOferta,
         linkAfiliado: linkOferta,
         dataValidade: null,
@@ -181,32 +179,29 @@ const CurioForm = (() => {
     }
   }
 
-  // ---------- RESETAR (BLINDADO CONTRA ERROS) ----------
+  // ---------- RESETAR ----------
   function resetarFormulario() {
-    if ($('linkOferta')) $('linkOferta').value = '';
-    if ($('produto')) $('produto').value = '';
-    if ($('comentarioPessoal')) $('comentarioPessoal').value = '';
-    if ($('precoPromocional')) $('precoPromocional').value = '';
-    if ($('precoOriginal')) $('precoOriginal').value = '';
-    if ($('cupom')) $('cupom').value = '';
-    if ($('precoComCupom')) $('precoComCupom').value = '';
-    if ($('categoria')) $('categoria').value = '';
-    if ($('isPix')) $('isPix').checked = false;
-
-    if ($('resultado-area')) $('resultado-area').classList.add('hidden');
-    if ($('badge-loja-detectada')) $('badge-loja-detectada').classList.add('hidden');
+    $('linkOferta').value = '';
+    $('produto').value = '';
+    $('comentarioPessoal').value = '';
+    $('precoPromocional').value = '';
+    $('precoOriginal').value = '';
+    $('cupom').value = '';
+    $('precoComCupom').value = '';
+    $('categoria').value = '';
+    
+    $('isPix').checked = false;
+    $('resultado-area').classList.add('hidden');
+    $('badge-loja-detectada').classList.add('hidden');
 
     const btn = $('btn-gerar');
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
-    }
-    
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
     textoGerado = "";
     lojaDetectada = null;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => { if ($('linkOferta')) $('linkOferta').focus(); }, 300);
+    setTimeout(() => $('linkOferta').focus(), 300);
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
@@ -231,14 +226,15 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      // Adiciona o try/catch individual para não quebrar tudo se um falhar
-      try { categorias = await CurioDB.listarCategorias(); } catch(e) { console.warn(e); }
-      try { lojas = await CurioDB.listarLojas(); } catch(e) { console.warn(e); }
-      try { templates = await CurioDB.listarTemplates(); } catch(e) { console.warn(e); }
+      // Carrega os dados
+      categorias = await CurioDB.listarCategorias();
+      lojas = await CurioDB.listarLojas();
+      templates = await CurioDB.listarTemplates();
 
-      // Categorias
+      // Preenche Categorias
       const selCat = $('categoria');
       if (selCat) {
+        selCat.innerHTML = '<option value="">Selecione...</option>'; // Reseta
         categorias.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
@@ -247,39 +243,44 @@ const CurioForm = (() => {
         });
       }
 
-      // Templates
+      // Preenche Templates
       const selTpl = $('select-template');
       if (selTpl) {
-        templates.forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
-          selTpl.appendChild(opt);
-        });
-        const padraoT = templates.find(t => t.padrao) || templates[0];
-        if (padraoT) selTpl.value = padraoT.id;
+        selTpl.innerHTML = ''; // Reseta
+        if (templates.length === 0) {
+          selTpl.innerHTML = '<option value="">Nenhum template. Vá em Templates.</option>';
+        } else {
+          templates.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
+            selTpl.appendChild(opt);
+          });
+          const padraoT = templates.find(t => t.padrao) || templates[0];
+          if (padraoT) selTpl.value = padraoT.id;
+        }
       }
 
       // Eventos
-      if ($('linkOferta')) $('linkOferta').addEventListener('input', atualizarBadgeLoja);
-      if ($('btn-colar-link')) $('btn-colar-link').onclick = colarLink;
-      if ($('btn-buscar-dados')) $('btn-buscar-dados').onclick = buscarDadosLink;
-      if ($('cupom')) $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
+      $('linkOferta').addEventListener('input', atualizarBadgeLoja);
+      $('btn-colar-link').onclick = colarLink;
+      $('btn-buscar-dados').onclick = buscarDadosLink;
+      $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
       
       document.querySelectorAll('[data-comentario]').forEach(btn => {
         btn.onclick = () => {
-          if ($('comentarioPessoal')) $('comentarioPessoal').value = btn.dataset.comentario;
+          $('comentarioPessoal').value = btn.dataset.comentario;
           CurioUtils.toast('Comentário aplicado!', 'sucesso');
         };
       });
 
       bindResultActions();
-      if ($('form-promocao')) $('form-promocao').addEventListener('submit', onSubmit);
+      $('form-promocao').addEventListener('submit', onSubmit);
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
     } catch (e) {
-      console.error("Erro real:", e);
-      CurioUtils.toast('Erro ao inicializar formulário.', 'erro');
+      console.error("Erro no init:", e);
+      CurioUtils.toast('Erro ao carregar dados. Verifique a internet.', 'erro');
     }
   }
 
