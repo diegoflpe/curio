@@ -1,6 +1,5 @@
 /* ============================================================
    CURIÓ PROMOS — LISTAGEM DE PROMOÇÕES
-   Filtros, busca, renderização em cards e ações.
    ============================================================ */
 
 const CurioPromocoes = (() => {
@@ -10,7 +9,6 @@ const CurioPromocoes = (() => {
   let lojas = [];
   let filtros = { busca: '', loja: '', categoria: '', status: '' };
 
-  // ---------- HELPERS ----------
   function statusEfetivo(p) {
     if (p.status === 'expirada') return 'expirada';
     if (p.dataValidade) {
@@ -42,15 +40,14 @@ const CurioPromocoes = (() => {
     const lista = aplicarFiltros(todas);
 
     if (contador) {
-      contador.textContent =
-        `${lista.length} promoção(ões) encontrada(s) de ${todas.length} total.`;
+      contador.textContent = `${lista.length} promoção(ões) encontrada(s) de ${todas.length} total.`;
     }
 
     if (lista.length === 0) {
       container.innerHTML = `
         <div class="card">
           <div class="empty-state">
-            <i data-lucide="tag" style="width:48px;height:48px;margin:0 auto 1rem;color:#CBD5E1;"></i>
+            <i data-lucide="tag" style="width:48px;height:48px;margin:0 auto 1rem;color:var(--text-muted);"></i>
             <h3>Nenhuma promoção encontrada</h3>
             <p>Ajuste os filtros ou cadastre uma nova promoção.</p>
           </div>
@@ -72,12 +69,10 @@ const CurioPromocoes = (() => {
   function cardHTML(p) {
     const status = statusEfetivo(p);
     const img = p.imagemUrl
-      ? `<img src="${CurioUtils.escapeHtml(p.imagemUrl)}" alt=""
-              style="width:100%;height:160px;object-fit:cover;border-radius:var(--raio-sm) var(--raio-sm) 0 0;"
-              onerror="this.style.display='none'">`
-      : `<div style="height:160px;background:var(--cinza-fundo);display:flex;align-items:center;justify-content:center;border-radius:var(--raio-sm) var(--raio-sm) 0 0;">
-           <i data-lucide="image" style="width:32px;height:32px;color:#CBD5E1;"></i>
-         </div>`;
+      ? `<img src="${CurioUtils.escapeHtml(p.imagemUrl)}" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:var(--raio-sm) var(--raio-sm) 0 0;" onerror="this.style.display='none'">`
+      : `<div style="height:160px;background:var(--bg-body);display:flex;align-items:center;justify-content:center;border-radius:var(--raio-sm) var(--raio-sm) 0 0;"><i data-lucide="image" style="width:32px;height:32px;color:var(--text-muted);"></i></div>`;
+
+    const temCupom = p.cupom ? `<div class="text-small" style="margin-top:0.5rem;color:var(--azul-marinho);font-weight:600;">🎟️ Cupom: ${CurioUtils.escapeHtml(p.cupom)}</div>` : '';
 
     return `
       <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
@@ -87,26 +82,17 @@ const CurioPromocoes = (() => {
             <span class="badge badge-${status}">${status}</span>
             <span class="text-small text-muted">${CurioUtils.escapeHtml(p.lojaNome || '—')}</span>
           </div>
-          <h4 style="margin-bottom:0.375rem;font-size:0.9375rem;line-height:1.3;">
-            ${CurioUtils.escapeHtml(p.produto)}
-          </h4>
-          <div class="text-small text-muted" style="margin-bottom:0.75rem;">
-            ${CurioUtils.escapeHtml(p.categoriaNome || '—')}
-          </div>
+          <h4 style="margin-bottom:0.375rem;font-size:0.9375rem;line-height:1.3;">${CurioUtils.escapeHtml(p.produto)}</h4>
+          <div class="text-small text-muted" style="margin-bottom:0.75rem;">${CurioUtils.escapeHtml(p.categoriaNome || '—')}</div>
           <div style="margin-top:auto;">
-            <div class="text-small text-muted" style="text-decoration:line-through;">
-              ${CurioUtils.formatarMoeda(p.precoOriginal)}
-            </div>
+            <div class="text-small text-muted" style="text-decoration:line-through;">${CurioUtils.formatarMoeda(p.precoOriginal)}</div>
             <div style="display:flex;align-items:baseline;gap:0.5rem;">
-              <span style="font-size:1.25rem;font-weight:700;color:var(--azul-marinho);">
-                ${CurioUtils.formatarMoeda(p.precoPromocional)}
-              </span>
-              <span class="badge" style="background:#DCFCE7;color:#166534;">
-                -${p.desconto || 0}%
-              </span>
+              <span style="font-size:1.25rem;font-weight:700;color:var(--azul-marinho);">${CurioUtils.formatarMoeda(p.precoPromocional)}</span>
+              ${p.desconto > 0 ? `<span class="badge" style="background:#DCFCE7;color:#166534;">-${p.desconto}%</span>` : ''}
             </div>
+            ${temCupom}
           </div>
-          <div class="flex gap-sm" style="margin-top:0.75rem;flex-wrap:wrap;">
+          <div class="flex gap-sm" style="margin-top:1rem;flex-wrap:wrap;">
             <a href="promocao-divulgar.html?id=${p.id}" class="btn btn-whatsapp btn-sm" style="flex:1;">
               <i data-lucide="message-circle" style="width:14px;height:14px;"></i> Divulgar
             </a>
@@ -116,11 +102,7 @@ const CurioPromocoes = (() => {
             <button class="btn btn-ghost btn-sm btn-duplicar" data-id="${p.id}" title="Duplicar">
               <i data-lucide="copy" style="width:14px;height:14px;"></i>
             </button>
-            <button class="btn btn-ghost btn-sm btn-excluir"
-                    data-id="${p.id}"
-                    data-produto="${CurioUtils.escapeHtml(p.produto)}"
-                    title="Excluir"
-                    style="color:var(--vermelho);">
+            <button class="btn btn-ghost btn-sm btn-excluir" data-id="${p.id}" data-produto="${CurioUtils.escapeHtml(p.produto)}" title="Excluir" style="color:#EF4444;">
               <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
             </button>
           </div>
@@ -135,7 +117,7 @@ const CurioPromocoes = (() => {
       btn.onclick = async () => {
         const id = btn.dataset.id;
         const produto = btn.dataset.produto;
-        if (!confirm(`Excluir a promoção "${produto}"?\n\nEsta ação não pode ser desfeita.`)) return;
+        if (!confirm(`Excluir a promoção "${produto}"?`)) return;
         try {
           await CurioDB.excluirPromocao(id);
           CurioUtils.toast('Promoção excluída.', 'sucesso');
@@ -166,22 +148,10 @@ const CurioPromocoes = (() => {
     const cat = document.getElementById('filtro-categoria');
     const st = document.getElementById('filtro-status');
 
-    if (busca) busca.addEventListener('input', (e) => {
-      filtros.busca = e.target.value.trim();
-      render();
-    });
-    if (loja) loja.addEventListener('change', (e) => {
-      filtros.loja = e.target.value;
-      render();
-    });
-    if (cat) cat.addEventListener('change', (e) => {
-      filtros.categoria = e.target.value;
-      render();
-    });
-    if (st) st.addEventListener('change', (e) => {
-      filtros.status = e.target.value;
-      render();
-    });
+    if (busca) busca.addEventListener('input', (e) => { filtros.busca = e.target.value.trim(); render(); });
+    if (loja) loja.addEventListener('change', (e) => { filtros.loja = e.target.value; render(); });
+    if (cat) cat.addEventListener('change', (e) => { filtros.categoria = e.target.value; render(); });
+    if (st) st.addEventListener('change', (e) => { filtros.status = e.target.value; render(); });
   }
 
   function preencherSelects() {
