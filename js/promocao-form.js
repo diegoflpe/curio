@@ -135,27 +135,15 @@ const CurioForm = (() => {
       const template = templates.find(t => t.id === templateId);
 
       const dados = {
-        produto,
-        imagemUrl: '',
-        descricao: '',
-        precoOriginal: precoOriginal,
-        precoPromocional,
+        produto, imagemUrl: '', descricao: '',
+        precoOriginal: precoOriginal, precoPromocional,
         desconto: CurioUtils.calcularDesconto(precoOriginal || precoPromocional, precoPromocional),
-        lojaId: lojaOpt ? lojaOpt.id : '',
-        lojaNome: lojaOpt ? lojaOpt.nome : 'Outras',
-        categoriaId,
-        categoriaNome: catOpt ? catOpt.nome : '',
-        linkOferta,
-        linkAfiliado: linkOferta,
-        dataValidade: null,
-        observacoes: '',
-        status: 'pendente',
-        precoPix: $('isPix').checked ? precoPromocional : null,
-        cupom: $('cupom').value.trim().toUpperCase() || '',
-        precoComCupom: parseFloat($('precoComCupom').value) || null,
-        incluirCuponsShopee: false,
-        incluirProgramePoupe: false,
-        incluirPrime: false,
+        lojaId: lojaOpt ? lojaOpt.id : '', lojaNome: lojaOpt ? lojaOpt.nome : 'Outras',
+        categoriaId, categoriaNome: catOpt ? catOpt.nome : '',
+        linkOferta, linkAfiliado: linkOferta, dataValidade: null, observacoes: '',
+        status: 'pendente', precoPix: $('isPix').checked ? precoPromocional : null,
+        cupom: $('cupom').value.trim().toUpperCase() || '', precoComCupom: parseFloat($('precoComCupom').value) || null,
+        incluirCuponsShopee: false, incluirProgramePoupe: false, incluirPrime: false,
         comentarioPessoal: $('comentarioPessoal').value.trim()
       };
 
@@ -181,24 +169,14 @@ const CurioForm = (() => {
 
   // ---------- RESETAR ----------
   function resetarFormulario() {
-    $('linkOferta').value = '';
-    $('produto').value = '';
-    $('comentarioPessoal').value = '';
-    $('precoPromocional').value = '';
-    $('precoOriginal').value = '';
-    $('cupom').value = '';
-    $('precoComCupom').value = '';
-    $('categoria').value = '';
-    
-    $('isPix').checked = false;
-    $('resultado-area').classList.add('hidden');
-    $('badge-loja-detectada').classList.add('hidden');
+    $('linkOferta').value = ''; $('produto').value = ''; $('comentarioPessoal').value = '';
+    $('precoPromocional').value = ''; $('precoOriginal').value = ''; $('cupom').value = ''; $('precoComCupom').value = '';
+    $('categoria').value = ''; $('isPix').checked = false;
+    $('resultado-area').classList.add('hidden'); $('badge-loja-detectada').classList.add('hidden');
 
     const btn = $('btn-gerar');
-    btn.disabled = false;
-    btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
-    textoGerado = "";
-    lojaDetectada = null;
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
+    textoGerado = ""; lojaDetectada = null;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => $('linkOferta').focus(), 300);
@@ -226,29 +204,33 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      // Carrega os dados de forma direta
+      // 1. Carrega os dados do banco
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
-      // Preenche Categorias
+      // 2. Preenche o Select de Categorias
       const selCat = $('categoria');
       if (selCat) {
         selCat.innerHTML = '<option value="">Selecione...</option>';
-        categorias.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.nome;
-          selCat.appendChild(opt);
-        });
+        if (categorias.length === 0) {
+          selCat.innerHTML = '<option value="">Nenhuma categoria cadastrada.</option>';
+        } else {
+          categorias.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.nome;
+            selCat.appendChild(opt);
+          });
+        }
       }
 
-      // Preenche Templates
+      // 3. Preenche o Select de Templates
       const selTpl = $('select-template');
       if (selTpl) {
         selTpl.innerHTML = '';
         if (templates.length === 0) {
-          selTpl.innerHTML = '<option value="">Nenhum template. Vá em Templates.</option>';
+          selTpl.innerHTML = '<option value="">Nenhum template. Cadastre em Templates.</option>';
         } else {
           templates.forEach(t => {
             const opt = document.createElement('option');
@@ -261,7 +243,7 @@ const CurioForm = (() => {
         }
       }
 
-      // Eventos
+      // 4. Eventos
       $('linkOferta').addEventListener('input', atualizarBadgeLoja);
       $('btn-colar-link').onclick = colarLink;
       $('btn-buscar-dados').onclick = buscarDadosLink;
@@ -278,9 +260,12 @@ const CurioForm = (() => {
       $('form-promocao').addEventListener('submit', onSubmit);
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      console.log("Formulário inicializado com sucesso!", { categorias: categorias.length, templates: templates.length });
+
     } catch (e) {
-      console.error("Erro no init:", e);
-      CurioUtils.toast('Erro ao carregar dados. Verifique a conexão.', 'erro');
+      console.error("Erro real no init do formulário:", e);
+      CurioUtils.toast('Erro no banco de dados: ' + e.message, 'erro');
     }
   }
 
