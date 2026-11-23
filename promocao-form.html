@@ -53,7 +53,6 @@
       <main class="page-content">
         <form id="form-promocao" style="max-width:800px;">
           
-          <!-- LINK E BUSCA -->
           <div class="card" style="margin-bottom:1rem;">
             <div class="form-group">
               <label for="linkOferta">
@@ -76,7 +75,6 @@
             </div>
           </div>
 
-          <!-- COMENTÁRIO -->
           <div class="card" style="margin-bottom:1rem;">
             <div class="form-group">
               <label for="comentarioPessoal">💬 Comentário Pessoal (Vai na 1ª linha)</label>
@@ -92,7 +90,6 @@
             </div>
           </div>
 
-          <!-- PREÇOS E EXTRAS -->
           <div class="card" style="margin-bottom:1rem;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="form-grid">
               <div class="form-group">
@@ -124,29 +121,6 @@
             </div>
           </div>
 
-          <!-- FLAGS SHOPEE / AMAZON -->
-          <div class="card" style="margin-bottom:1rem;" id="card-flags">
-            <div class="form-group hidden" id="flag-shopee">
-              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
-                <input type="checkbox" id="incluirCuponsShopee" style="width:18px;height:18px;">
-                <span>🎟️ Incluir cupons Shopee (abaixo do link)</span>
-              </label>
-            </div>
-            <div class="form-group hidden" id="flag-amazon-programe">
-              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
-                <input type="checkbox" id="incluirProgramePoupe" style="width:18px;height:18px;">
-                <span>💰 Incluir "Programe e Poupe" (abaixo do link)</span>
-              </label>
-            </div>
-            <div class="form-group hidden" id="flag-amazon-prime">
-              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
-                <input type="checkbox" id="incluirPrime" style="width:18px;height:18px;">
-                <span>🚚 Incluir Frete Grátis Prime (abaixo do link)</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- CATEGORIA E TEMPLATE -->
           <div class="card" style="margin-bottom:1rem;">
             <div class="form-group">
               <label>Categoria *</label>
@@ -160,17 +134,14 @@
             </div>
           </div>
 
-          <!-- BOTÃO GERAR -->
           <button type="submit" class="btn btn-primary btn-block" id="btn-gerar" style="font-size:1.1rem;padding:1rem;margin-bottom:2rem;">
             <i data-lucide="sparkles"></i> Gerar e Salvar Anúncio
           </button>
         </form>
 
-        <!-- RESULTADO -->
         <div id="resultado-area" class="card hidden" style="border:2px solid var(--verde-whats); background:#F8FAFC; max-width:800px;">
           <h3 style="margin-bottom:1rem;color:var(--azul-marinho);">Anúncio Gerado com Sucesso!</h3>
           <div class="result-box" id="result-box"></div>
-          
           <div class="flex gap-sm" style="margin-top:1.5rem; flex-wrap:wrap;">
             <button type="button" class="btn btn-outline" id="btn-copiar" style="flex:1;">
               <i data-lucide="copy"></i> Copiar e Limpar Tela
@@ -186,27 +157,30 @@
 
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- FIREBASE E SCRIPTS -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/app.js"></script>
   
-  <!-- COMENTE O DIVULGACAO.JS TEMPORARIAMENTE -->
-  <!-- <script src="js/divulgacao.js"></script> -->
-  
-    <script>
+  <script src="js/firebase-config.js?v=4"></script>
+  <script src="js/utils.js?v=4"></script>
+  <script src="js/auth.js?v=4"></script>
+  <script src="js/db.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
+  <script src="js/divulgacao.js?v=4"></script>
+  <script src="js/promocao-form.js?v=4"></script>
+
+  <script>
+    // Autenticação e depois inicialização manual caso o DOMContentLoaded falhe
     CurioAuth.protegerPagina().then(async (user) => {
       if (!user) return;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
       document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
       
-      // A INICIALIZAÇÃO DO FORMULÁRIO AGORA ACONTECE SOZINHA DENTRO DO ARQUIVO JS
+      // O próprio arquivo JS vai se inicializar sozinho, mas forçamos aqui novamente por garantia.
+      if (window.CurioForm) await CurioForm.init();
     });
   </script>
 </body>
