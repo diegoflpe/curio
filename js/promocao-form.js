@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO FINAL)
+   CURIÓ PROMOS — GERADOR DE OFERTAS
    ============================================================ */
 
 const CurioForm = (() => {
@@ -204,12 +204,12 @@ const CurioForm = (() => {
   // ---------- INIT ----------
   async function init() {
     try {
-      // Carrega os dados
+      // Puxa os dados do banco
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
-      // Preenche Categorias
+      // Preenche o select de categorias
       const selCat = $('categoria');
       if (selCat) {
         selCat.innerHTML = '<option value="">Selecione...</option>';
@@ -221,7 +221,7 @@ const CurioForm = (() => {
         });
       }
 
-      // Preenche Templates
+      // Preenche o select de templates
       const selTpl = $('select-template');
       if (selTpl) {
         selTpl.innerHTML = '';
@@ -239,7 +239,7 @@ const CurioForm = (() => {
         }
       }
 
-      // Eventos
+      // Configura os botões e inputs
       $('linkOferta').addEventListener('input', atualizarBadgeLoja);
       $('btn-colar-link').onclick = colarLink;
       $('btn-buscar-dados').onclick = buscarDadosLink;
@@ -256,21 +256,11 @@ const CurioForm = (() => {
       $('form-promocao').addEventListener('submit', onSubmit);
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
-      
+
     } catch (e) {
-      console.error("❌ Erro no init:", e);
-      alert("Erro ao montar tela: " + e.message);
+      console.error("Erro no init:", e);
     }
   }
 
-  // ---------- AUTO-INICIALIZAÇÃO ----------
-  // Assim que a página carregar, espera o HTML estar pronto e inicializa sozinho.
-  document.addEventListener('DOMContentLoaded', () => {
-    // Um pequeno delay para garantir que o Firebase Auth liberou a tela
-    setTimeout(() => {
-      init();
-    }, 500); 
-  });
-
-  return { init }; // Deixa exposto caso queira chamar manualmente em outro lugar
+  return { init };
 })();
