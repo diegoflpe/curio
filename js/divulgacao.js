@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO (CONSTRUÇÃO DO ZERO)
+   CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO
    ============================================================ */
 
 const CurioDivulgacao = (() => {
@@ -28,16 +28,24 @@ const CurioDivulgacao = (() => {
 
     // --- 2. BLOCO DE PREÇOS ---
     msg += `\n\n`;
+    
+    // Linha de Preço Antigo
     if (temDesconto) {
       msg += `❌ De: ${tacharTexto(CurioUtils.formatarMoeda(promocao.precoOriginal))}\n`;
-      msg += `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)} (${promocao.desconto}% OFF 🔥)\n`;
-    } else {
-      msg += `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}\n`;
     }
 
+    // Linha de Preço Promocional com Pix e Desconto
+    let linhaPromocional = `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}`;
+    
     if (promocao.precoPix) {
-      msg += `💠 Preço no Pix\n`;
+      linhaPromocional += ` no Pix 💠`;
     }
+    
+    if (temDesconto) {
+      linhaPromocional += ` (${promocao.desconto}% OFF 🔥)`;
+    }
+    
+    msg += `${linhaPromocional}\n`;
 
     // --- 3. LINK E COMPLEMENTOS DA LOJA ---
     msg += `\n`;
@@ -51,12 +59,8 @@ const CurioDivulgacao = (() => {
     }
 
     if (loja.includes('amazon')) {
-      if (promocao.incluirProgramePoupe) {
-        msg += `\n${TEXTOS.amazonPrograme}\n`;
-      }
-      if (promocao.incluirPrime) {
-        msg += `\n${TEXTOS.amazonPrime}\n`;
-      }
+      if (promocao.incluirProgramePoupe) msg += `\n${TEXTOS.amazonPrograme}\n`;
+      if (promocao.incluirPrime) msg += `\n${TEXTOS.amazonPrime}\n`;
     }
 
     // --- 4. CUPOM MANUAL ---
@@ -71,7 +75,6 @@ const CurioDivulgacao = (() => {
     // --- 5. FRASE FINAL ---
     msg += `\n_*⚡ Aproveite! Condição especial por tempo limitado.*_`;
 
-    // Limpa linhas em branco duplicadas
     return msg.replace(/\n{3,}/g, '\n\n').trim();
   }
 
