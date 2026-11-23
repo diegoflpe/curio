@@ -121,6 +121,28 @@
             </div>
           </div>
 
+          <!-- FLAGS SHOPEE / AMAZON -->
+          <div class="card" style="margin-bottom:1rem;" id="card-flags">
+            <div class="form-group hidden" id="flag-shopee">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirCuponsShopee" style="width:18px;height:18px;">
+                <span>🎟️ Incluir cupons Shopee (abaixo do link)</span>
+              </label>
+            </div>
+            <div class="form-group hidden" id="flag-amazon-programe">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirProgramePoupe" style="width:18px;height:18px;">
+                <span>💰 Incluir "Programe e Poupe" (abaixo do link)</span>
+              </label>
+            </div>
+            <div class="form-group hidden" id="flag-amazon-prime">
+              <label class="flex gap-sm" style="align-items:center;cursor:pointer;">
+                <input type="checkbox" id="incluirPrime" style="width:18px;height:18px;">
+                <span>🚚 Incluir Frete Grátis Prime (abaixo do link)</span>
+              </label>
+            </div>
+          </div>
+
           <div class="card" style="margin-bottom:1rem;">
             <div class="form-group">
               <label>Categoria *</label>
@@ -157,29 +179,25 @@
 
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- FIREBASE E SCRIPTS -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
   
-  <script src="js/firebase-config.js?v=4"></script>
-  <script src="js/utils.js?v=4"></script>
-  <script src="js/auth.js?v=4"></script>
-  <script src="js/db.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
-  <script src="js/divulgacao.js?v=4"></script>
-  <script src="js/promocao-form.js?v=4"></script>
+  <script src="js/firebase-config.js?v=10"></script>
+  <script src="js/utils.js?v=10"></script>
+  <script src="js/auth.js?v=10"></script>
+  <script src="js/db.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
+  <script src="js/divulgacao.js?v=10"></script>
+  <script src="js/promocao-form.js?v=10"></script>
 
   <script>
-    // Autenticação e depois inicialização manual caso o DOMContentLoaded falhe
     CurioAuth.protegerPagina().then(async (user) => {
       if (!user) return;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
       document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
-      
-      // O próprio arquivo JS vai se inicializar sozinho, mas forçamos aqui novamente por garantia.
       if (window.CurioForm) await CurioForm.init();
     });
   </script>
