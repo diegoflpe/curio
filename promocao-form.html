@@ -199,13 +199,14 @@
   <!-- COMENTE O DIVULGACAO.JS TEMPORARIAMENTE -->
   <!-- <script src="js/divulgacao.js"></script> -->
   
-  <script src="js/promocao-form.js"></script>
+    <script>
     CurioAuth.protegerPagina().then(async (user) => {
       if (!user) return;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
       document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
-      await CurioForm.init();
+      
+      // A INICIALIZAÇÃO DO FORMULÁRIO AGORA ACONTECE SOZINHA DENTRO DO ARQUIVO JS
     });
   </script>
 </body>
