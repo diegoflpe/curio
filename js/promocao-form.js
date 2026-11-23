@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (BLINDADO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (TENTATIVA INFINITA)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,9 +9,50 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
-  let inicializado = false;
+  let carregado = false;
 
   function $(id) { return document.getElementById(id); }
+
+  // ---------- CARREGAR SELECTS ----------
+  async function carregarSelects() {
+    try {
+      categorias = await CurioDB.listarCategorias();
+      lojas = await CurioDB.listarLojas();
+      templates = await CurioDB.listarTemplates();
+
+      const selCat = $('categoria');
+      if (selCat) {
+        selCat.innerHTML = '<option value="">Selecione...</option>';
+        categorias.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.nome;
+          selCat.appendChild(opt);
+        });
+      }
+
+      const selTpl = $('select-template');
+      if (selTpl) {
+        selTpl.innerHTML = '';
+        if (templates.length === 0) {
+          selTpl.innerHTML = '<option value="">Nenhum template cadastrado.</option>';
+        } else {
+          templates.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
+            selTpl.appendChild(opt);
+          });
+          const padraoT = templates.find(t => t.padrao) || templates[0];
+          if (padraoT) selTpl.value = padraoT.id;
+        }
+      }
+      carregado = true;
+    } catch (error) {
+      console.warn("Aguardando banco de dados...", error);
+      setTimeout(carregarSelects, 1500); // Tenta de novo em 1,5s
+    }
+  }
 
   // ---------- DETECÇÃO DE LOJA ----------
   function detectarLojaPorUrl(url) {
@@ -28,17 +69,18 @@ const CurioForm = (() => {
 
   function atualizarBadgeLoja() {
     const badge = $('badge-loja-detectada');
-    if (!badge) return;
     const url = $('linkOferta') ? $('linkOferta').value : '';
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (url && lojaDetectada !== 'Outras') {
-      badge.textContent = lojaDetectada;
-      badge.className = 'badge badge-divulgada';
-      badge.style.marginLeft = '0.5rem';
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
+    if (badge) {
+      if (url && lojaDetectada !== 'Outras') {
+        badge.textContent = lojaDetectada;
+        badge.className = 'badge badge-divulgada';
+        badge.style.marginLeft = '0.5rem';
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
     }
   }
 
@@ -108,7 +150,7 @@ const CurioForm = (() => {
     }
   }
 
-  // ---------- SUBMIT (GERAR E SALVAR) ----------
+  // ---------- SUBMIT ----------
   async function onSubmit(e) {
     e.preventDefault();
     
@@ -195,8 +237,8 @@ const CurioForm = (() => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
-  // ---------- AÇÕES PÓS-GERAÇÃO ----------
-  function bindResultActions() {
+  // ---------- EVENTOS DA TELA ----------
+  function bindEventos() {
     if ($('btn-copiar')) {
       $('btn-copiar').onclick = async () => {
         if (!textoGerado) return;
@@ -215,68 +257,43 @@ const CurioForm = (() => {
         setTimeout(resetarFormulario, 500);
       };
     }
+
+    if ($('linkOferta')) $('linkOferta').addEventListener('input', atualizarBadgeLoja);
+    if ($('btn-colar-link')) $('btn-colar-link').onclick = colarLink;
+    if ($('btn-buscar-dados')) $('btn-buscar-dados').onclick = buscarDadosLink;
+    if ($('cupom')) $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
+    
+    document.querySelectorAll('[data-comentario]').forEach(btn => {
+      btn.onclick = () => {
+        if ($('comentarioPessoal')) $('comentarioPessoal').value = btn.dataset.comentario;
+        CurioUtils.toast('Comentário aplicado!', 'sucesso');
+      };
+    });
+
+    if ($('form-promocao')) $('form-promocao').addEventListener('submit', onSubmit);
   }
 
   // ---------- INIT ----------
   async function init() {
-    // Se não encontrar o select na página, significa que não é a página do formulário. Aborta!
+    // Se não estiver na página do formulário, não faz nada
     if (!$('categoria') || !$('select-template')) return;
 
-    if (inicializado) return;
-    inicializado = true;
-
-    try {
-      categorias = await CurioDB.listarCategorias();
-      lojas = await CurioDB.listarLojas();
-      templates = await CurioDB.listarTemplates();
-
-      const selCat = $('categoria');
-      selCat.innerHTML = '<option value="">Selecione...</option>';
-      categorias.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.nome;
-        selCat.appendChild(opt);
-      });
-
-      const selTpl = $('select-template');
-      selTpl.innerHTML = '';
-      if (templates.length === 0) {
-        selTpl.innerHTML = '<option value="">Nenhum template.</option>';
-      } else {
-        templates.forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
-          selTpl.appendChild(opt);
-        });
-        const padraoT = templates.find(t => t.padrao) || templates[0];
-        if (padraoT) selTpl.value = padraoT.id;
-      }
-
-      if ($('linkOferta')) $('linkOferta').addEventListener('input', atualizarBadgeLoja);
-      if ($('btn-colar-link')) $('btn-colar-link').onclick = colarLink;
-      if ($('btn-buscar-dados')) $('btn-buscar-dados').onclick = buscarDadosLink;
-      if ($('cupom')) $('cupom').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase());
-      
-      document.querySelectorAll('[data-comentario]').forEach(btn => {
-        btn.onclick = () => {
-          if ($('comentarioPessoal')) $('comentarioPessoal').value = btn.dataset.comentario;
-          CurioUtils.toast('Comentário aplicado!', 'sucesso');
-        };
-      });
-
-      bindResultActions();
-      if ($('form-promocao')) $('form-promocao').addEventListener('submit', onSubmit);
-
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-      console.log("✅ Formulário montado!");
-
-    } catch (e) {
-      console.error("Erro no init:", e);
-      inicializado = false;
-    }
+    // Inicia a tentativa de pegar os dados
+    carregarSelects();
+    
+    // Liga os botões
+    bindEventos();
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   return { init };
 })();
+
+// AUTO-INICIALIZAR: Roda assim que a página carregar, sem depender do HTML chamar
+window.addEventListener('load', () => {
+  // Dá 1 segundo de margem para o Firebase checar o login
+  setTimeout(() => {
+    CurioForm.init();
+  }, 1000);
+});
