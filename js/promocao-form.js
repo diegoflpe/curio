@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (COMPLETO)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (COMPLETO E CORRIGIDO)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,7 +9,7 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
-  let carregado = false;
+  let carregadoComSucesso = false; // Variável corrigida
 
   function $(id) { return document.getElementById(id); }
 
@@ -47,7 +47,7 @@ const CurioForm = (() => {
           if (padraoT) selTpl.value = padraoT.id;
         }
       }
-      carregado = true;
+      carregadoComSucesso = true;
     } catch (error) {
       console.warn("Aguardando banco de dados...", error);
       setTimeout(carregarSelects, 1500);
@@ -77,10 +77,10 @@ const CurioForm = (() => {
     flagPrograme.classList.toggle('hidden', nomeLoja !== 'Amazon');
     flagPrime.classList.toggle('hidden', nomeLoja !== 'Amazon');
 
-    if (nomeLoja !== 'Shopee') $('incluirCuponsShopee').checked = false;
+    if (nomeLoja !== 'Shopee' && $('incluirCuponsShopee')) $('incluirCuponsShopee').checked = false;
     if (nomeLoja !== 'Amazon') {
-      $('incluirProgramePoupe').checked = false;
-      $('incluirPrime').checked = false;
+      if ($('incluirProgramePoupe')) $('incluirProgramePoupe').checked = false;
+      if ($('incluirPrime')) $('incluirPrime').checked = false;
     }
   }
 
@@ -207,7 +207,6 @@ const CurioForm = (() => {
         status: 'pendente', precoPix: $('isPix').checked ? precoPromocional : null,
         cupom: $('cupom').value.trim().toUpperCase() || '', precoComCupom: parseFloat($('precoComCupom').value) || null,
         
-        // SALVANDO AS FLAGS AGORA
         incluirCuponsShopee: $('incluirCuponsShopee') ? $('incluirCuponsShopee').checked : false,
         incluirProgramePoupe: $('incluirProgramePoupe') ? $('incluirProgramePoupe').checked : false,
         incluirPrime: $('incluirPrime') ? $('incluirPrime').checked : false,
@@ -319,6 +318,7 @@ const CurioForm = (() => {
 // Auto-inicializar caso a página não chame
 window.addEventListener('load', () => {
   setTimeout(() => {
-    if (!carregado && window.CurioForm) CurioForm.init();
+    // Usa a variável corrigida
+    if (!carregadoComSucesso && window.CurioForm) CurioForm.init();
   }, 1000);
 });
