@@ -35,8 +35,27 @@ const CurioForm = (() => {
       badge.className = 'badge badge-divulgada';
       badge.style.marginLeft = '0.5rem';
       badge.classList.remove('hidden');
+      aplicarFlagsLoja(lojaDetectada);
     } else {
       badge.classList.add('hidden');
+      aplicarFlagsLoja(null);
+    }
+  }
+
+  function aplicarFlagsLoja(nomeLoja) {
+    const flagShopee = $('flag-shopee');
+    const flagPrograme = $('flag-amazon-programe');
+    const flagPrime = $('flag-amazon-prime');
+    if (!flagShopee) return; // Segurança caso o HTML mude
+
+    flagShopee.classList.toggle('hidden', nomeLoja !== 'Shopee');
+    flagPrograme.classList.toggle('hidden', nomeLoja !== 'Amazon');
+    flagPrime.classList.toggle('hidden', nomeLoja !== 'Amazon');
+
+    if (nomeLoja !== 'Shopee') $('incluirCuponsShopee').checked = false;
+    if (nomeLoja !== 'Amazon') {
+      $('incluirProgramePoupe').checked = false;
+      $('incluirPrime').checked = false;
     }
   }
 
@@ -136,7 +155,7 @@ const CurioForm = (() => {
 
       const dados = {
         produto,
-        imagemUrl: '', // Removido do form, salva vazio
+        imagemUrl: '', // Removido do HTML, salva vazio no banco
         descricao: '',
         precoOriginal: precoOriginal || precoPromocional,
         precoPromocional,
@@ -153,10 +172,9 @@ const CurioForm = (() => {
         precoPix: $('isPix').checked ? precoPromocional : null,
         cupom: $('cupom').value.trim().toUpperCase() || '',
         precoComCupom: parseFloat($('precoComCupom').value) || null,
-        // Flags removidas do HTML, salvando false por padrão
-        incluirCuponsShopee: false, 
-        incluirProgramePoupe: false,
-        incluirPrime: false,
+        incluirCuponsShopee: $('incluirCuponsShopee').checked,
+        incluirProgramePoupe: $('incluirProgramePoupe').checked,
+        incluirPrime: $('incluirPrime').checked,
         comentarioPessoal: $('comentarioPessoal').value.trim()
       };
 
@@ -190,10 +208,15 @@ const CurioForm = (() => {
     $('cupom').value = '';
     $('precoComCupom').value = '';
     $('categoria').value = '';
+    
     $('isPix').checked = false;
+    $('incluirCuponsShopee').checked = false;
+    $('incluirProgramePoupe').checked = false;
+    $('incluirPrime').checked = false;
 
     $('resultado-area').classList.add('hidden');
     $('badge-loja-detectada').classList.add('hidden');
+    if ($('flag-shopee')) aplicarFlagsLoja(null);
 
     const btn = $('btn-gerar');
     btn.disabled = false;
