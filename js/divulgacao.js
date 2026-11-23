@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO
+   CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO (CONSTRUÇÃO DO ZERO)
    ============================================================ */
 
 const CurioDivulgacao = (() => {
@@ -17,77 +17,62 @@ const CurioDivulgacao = (() => {
   function gerar(templateConteudo, promocao) {
     const temDesconto = promocao.precoOriginal && promocao.precoOriginal > promocao.precoPromocional;
     const link = promocao.linkAfiliado || promocao.linkOferta || '';
+    const loja = (promocao.lojaNome || '').toLowerCase();
 
-    // --- 1. CONSTRUÇÃO DO TEXTO BASE ---
-    // Limpa o template de variaveis antigas e monta a base
-    let msg = templateConteudo
-      .replace(/\{comentario\}/g, promocao.comentarioPessoal || '')
-      .replace(/\{produto\}/g, promocao.produto || '')
-      .replace(/\{link\}/g, link)
-      .replace(/\{preco_original_tachado\}/g, '') // Ignora a linha solta do template antigo
-      .replace(/\{preco_original\}/g, '')
-      .replace(/\{preco_promocional\}/g, '')
-      .replace(/\{desconto\}/g, '')
-      .replace(/⚡ Aproveite! Condição especial por tempo limitado\.?/gi, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+    // --- 1. TÍTULO E COMENTÁRIO ---
+    let msg = "";
+    if (promocao.comentarioPessoal) {
+      msg += `${promocao.comentarioPessoal}\n\n`;
+    }
+    msg += `🐦 ${promocao.produto}`;
 
     // --- 2. BLOCO DE PREÇOS ---
-    let blocoPrecos = "";
+    msg += `\n\n`;
     if (temDesconto) {
-      blocoPrecos = `❌ De: ${tacharTexto(CurioUtils.formatarMoeda(promocao.precoOriginal))}\n✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)} (${promocao.desconto}% OFF 🔥)`;
+      msg += `❌ De: ${tacharTexto(CurioUtils.formatarMoeda(promocao.precoOriginal))}\n`;
+      msg += `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)} (${promocao.desconto}% OFF 🔥)\n`;
     } else {
-      blocoPrecos = `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}`;
+      msg += `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}\n`;
     }
 
-    // Se tiver Pix, adiciona na linha de baixo sem repetir o valor
     if (promocao.precoPix) {
-      blocoPrecos += `\n💠 Preço no Pix`;
+      msg += `💠 Preço no Pix\n`;
     }
 
-    // --- 3. BLOCO DE CUPOM ---
-    let blocoCupom = "";
-    if (promocao.cupom) {
-      blocoCupom = `🎟️ Cupom: \`${promocao.cupom}\``;
-      if (promocao.precoComCupom) blocoCupom += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
-    }
-
-    // --- 4. MONTAGEM FINAL ---
-    // Procura a posição do link no texto para colocar os preços antes dele
-    if (msg.includes(link)) {
-      let textoFormatado = msg.replace(link, `${blocoPrecos}\n\n${link}`);
-      
-      // Se tiver cupom, coloca depois do link
-      if (blocoCupom) {
-        textoFormatado = textoFormatado.replace(link, `${link}\n\n${blocoCupom}`);
+    // --- 3. LINK E COMPLEMENTOS DA LOJA ---
+    msg += `\n`;
+    if (loja.includes('shopee')) {
+      msg += `Compre aqui 👇\n${link}\n`;
+      if (promocao.incluirCuponsShopee) {
+        msg += `\n${TEXTOS.shopeeCupons}\n`;
       }
-      
-      // Se for Shopee, coloca o "Compre aqui"
-      if ((promocao.lojaNome || '').toLowerCase().includes('shopee')) {
-        if (textoFormatado.includes(`👉 ${link}`)) textoFormatado = textoFormatado.replace(`👉 ${link}`, `Compre aqui 👇\n${link}`);
-        else textoFormatado = textoFormatado.replace(link, `Compre aqui 👇\n${link}`);
-        
-        if (promocao.incluirCuponsShopee) textoFormatado = textoFormatado.replace(link, `${link}\n\n${TEXTOS.shopeeCupons}`);
-      }
-
-      // Se for Amazon, coloca os extras
-      if ((promocao.lojaNome || '').toLowerCase().includes('amazon')) {
-        if (promocao.incluirProgramePoupe) textoFormatado = textoFormatado.replace(link, `${link}\n\n${TEXTOS.amazonPrograme}`);
-        if (promocao.incluirPrime) textoFormatado = textoFormatado.replace(link, `${link}\n\n${TEXTOS.amazonPrime}`);
-      }
-
-      msg = textoFormatado;
-
     } else {
-      // Caso não ache o link, joga tudo no final
-      msg += `\n\n${blocoPrecos}\n\n👉 ${link}`;
-      if (blocoCupom) msg += `\n\n${blocoCupom}`;
+      msg += `👉 ${link}\n`;
     }
 
-    // Adiciona a frase final formatada
-    msg += `\n\n_*⚡ Aproveite! Condição especial por tempo limitado.*_`;
+    if (loja.includes('amazon')) {
+      if (promocao.incluirProgramePoupe) {
+        msg += `\n${TEXTOS.amazonPrograme}\n`;
+      }
+      if (promocao.incluirPrime) {
+        msg += `\n${TEXTOS.amazonPrime}\n`;
+      }
+    }
 
-    return msg.trim();
+    // --- 4. CUPOM MANUAL ---
+    if (promocao.cupom) {
+      msg += `\n🎟️ Cupom: \`${promocao.cupom}\``;
+      if (promocao.precoComCupom) {
+        msg += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
+      }
+      msg += `\n`;
+    }
+
+    // --- 5. FRASE FINAL ---
+    msg += `\n_*⚡ Aproveite! Condição especial por tempo limitado.*_`;
+
+    // Limpa linhas em branco duplicadas
+    return msg.replace(/\n{3,}/g, '\n\n').trim();
   }
 
   function abrirWhatsApp(mensagem) {
