@@ -56,19 +56,21 @@ https://link.amazon/B09yJ3i1Z`
   function gerar(templateConteudo, promocao) {
     let msg = aplicarVariaveis(templateConteudo, dadosDaPromocao(promocao));
 
-    // Se o template NÃO contém {comentario} mas a promoção tem comentário,
-    // adiciona no topo automaticamente.
+    // 1. Remove a frase final do template (para não ficar no meio do texto)
+    const fraseFinal = "⚡ Aproveite! Condição especial por tempo limitado.";
+    msg = msg.replace(fraseFinal, '').trim();
+
+    // 2. Se o template NÃO contém {comentario}, adiciona no topo
     if (promocao.comentarioPessoal && !templateConteudo.includes('{comentario}')) {
       msg = `${promocao.comentarioPessoal}\n\n${msg}`;
     }
 
-    // Adiciona Pix/Cupom se o template não os menciona
+    // 3. Adiciona Pix/Cupom
     const extras = [];
     if (promocao.precoPix && !templateConteudo.includes('{preco_pix}')) {
       extras.push(`💠 Preço no Pix: ${CurioUtils.formatarMoeda(promocao.precoPix)}`);
     }
     if (promocao.cupom && !templateConteudo.includes('{cupom}')) {
-      // AJUSTE 1: Cupom com código inline (apenas o nome do cupom)
       let linha = `🎟️ Cupom: \`${promocao.cupom}\``;
       if (promocao.precoComCupom) {
         linha += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
@@ -79,10 +81,10 @@ https://link.amazon/B09yJ3i1Z`
       msg += `\n\n${extras.join('\n')}`;
     }
 
-    // Complementos por loja
+    // 4. Complementos por loja
     const loja = (promocao.lojaNome || '').toLowerCase();
     
-    // AJUSTE 2: Compre aqui 👇 antes do link da Shopee
+    // Ajuste do link da Shopee
     if (loja.includes('shopee')) {
       const linkFormatado = promocao.linkAfiliado || promocao.linkOferta;
       if (msg.includes(`👉 ${linkFormatado}`)) {
@@ -104,6 +106,9 @@ https://link.amazon/B09yJ3i1Z`
         msg += `\n\n${TEXTOS.amazonPrime}`;
       }
     }
+
+    // 5. Adiciona a frase final novamente no final de TUDO
+    msg += `\n\n${fraseFinal}`;
 
     return msg.trim();
   }
