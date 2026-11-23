@@ -44,37 +44,81 @@ const CurioDivulgacao = (() => {
   function gerar(templateConteudo, promocao) {
     let msg = aplicarVariaveis(templateConteudo, dadosDaPromocao(promocao));
 
-    const fraseFinalBase = "⚡ Aproveite! Condição especial por tempo limitado.";
-    msg = msg.replace(fraseFinalBase, '').trim();
+    const temDesconto = promocao.precoOriginal && promocao.precoOriginal > promocao.precoPromocional;
 
-    if (promocao.comentarioPessoal && !templateConteudo.includes('{comentario}')) {
-      msg = `${promocao.comentarioPessoal}\n\n${msg}`;
+    // --- 1. LIMPEZA DO TEXTO (Remove os erros do template antigo) ---
+    msg = msg.replace(/\{comentario\}/g, promocao.comentarioPessoal || '');
+    msg = msg.replace(/\{produto\}/g, promocao.produto || '');
+    msg = msg.replace(/\{link\}/g, promocao.linkAfiliado || promocao.linkOferta || '');
+    
+    // Remove a frase final antiga (se existir)
+    msg = msg.replace(/⚡ Aproveite! Condição especial por tempo limitado\.?/gi, '').trim();
+
+    // --- 2. CONSTRUÇÃO DOS PREÇOS (Do zero) ---
+    // Limpa qualquer resquício de preço do template
+    msg = msg.replace(/❌ De:.*?(\n|$)/gi, '');
+    msg = msg.replace(/✅ Por:.*?(\n|$)/gi, '');
+    msg = msg.replace(/\(.*?% OFF.*?\)/gi, ''); // Remove () antigos
+    
+    // Monta a linha de preços perfeita
+    let textoPrecos = "";
+    if (temDesconto) {
+      textoPrecos = `❌ De: ${tacharTexto(CurioUtils.formatarMoeda(promocao.precoOriginal))}\n✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)} (${promocao.desconto}% OFF 🔥)`;
+    } else {
+      textoPrecos = `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}`;
     }
 
+    // Insere os preços no lugar certo
+    if (!msg.includes(textoPrecos)) {
+      msg = msg.replace(/\{preco_original_tachado\}|\{preco_original\}|\{preco_promocional\}|\{desconto\}/g, '');
+      // Coloca depois do título (ou no início se não achar título)
+      const linhas = msg.split('\n').filter(l => l.trim() !== '');
+      if (linhas.length > 1) {
+        linhas.splice(2, 0, textoPrecos); // Tenta colocar na 3ª linha
+        msg = linhas.join('\n\n');
+      } else {
+        msg += `\n\n${textoPrecos}`;
+      }
+    }
+
+    // --- 3. ADICIONA EXTRAS (Pix, Cupom, etc) ---
     const extras = [];
-    if (promocao.precoPix && !templateConteudo.includes('{preco_pix}')) extras.push(`💠 Preço no Pix: ${CurioUtils.formatarMoeda(promocao.precoPix)}`);
-    if (promocao.cupom && !templateConteudo.includes('{cupom}')) {
+    if (promocao.precoPix) extras.push(`💠 Preço no Pix: ${CurioUtils.formatarMoeda(promocao.precoPix)}`);
+    if (promocao.cupom) {
       let linha = `🎟️ Cupom: \`${promocao.cupom}\``;
       if (promocao.precoComCupom) linha += ` — preço final: ${CurioUtils.formatarMoeda(promocao.precoComCupom)}`;
       extras.push(linha);
     }
-    if (extras.length) msg += `\n\n${extras.join('\n')}`;
+    if (extras.length && !msg.includes('Cupom:')) {
+      msg += `\n\n${extras.join('\n')}`;
+    }
 
+    // --- 4. COMPLEMENTOS POR LOJA ---
     const loja = (promocao.lojaNome || '').toLowerCase();
+    const linkFormatado = promocao.linkAfiliado || promocao.linkOferta;
+    
     if (loja.includes('shopee')) {
-      const linkFormatado = promocao.linkAfiliado || promocao.linkOferta;
       if (msg.includes(`👉 ${linkFormatado}`)) msg = msg.replace(`👉 ${linkFormatado}`, `Compre aqui 👇\n${linkFormatado}`);
       else if (msg.includes(linkFormatado)) msg = msg.replace(linkFormatado, `Compre aqui 👇\n${linkFormatado}`);
       
-      if (promocao.incluirCuponsShopee) msg += `\n\n${TEXTOS.shopeeCupons}`;
+      if (promocao.incluirCuponsShopee && !msg.includes('Resgate os cupons')) {
+        msg += `\n\n${TEXTOS.shopeeCupons}`;
+      }
     }
     
     if (loja.includes('amazon')) {
-      if (promocao.incluirProgramePoupe) msg += `\n\n${TEXTOS.amazonPrograme}`;
-      if (promocao.incluirPrime) msg += `\n\n${TEXTOS.amazonPrime}`;
+      if (promocao.incluirProgramePoupe && !msg.includes('PRA CHEGAR NO VALOR')) {
+        msg += `\n\n${TEXTOS.amazonPrograme}`;
+      }
+      if (promocao.incluirPrime && !msg.includes('FRETE GRÁTIS PRIME')) {
+        msg += `\n\n${TEXTOS.amazonPrime}`;
+      }
     }
 
+    // --- 5. FRASE FINAL ---
     msg += `\n\n_*⚡ Aproveite! Condição especial por tempo limitado.*_`;
+
+    // Limpa linhas em branco extras que possam ter sobrado
     return msg.replace(/\n{3,}/g, '\n\n').trim();
   }
 
