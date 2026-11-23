@@ -35,22 +35,8 @@ const CurioForm = (() => {
       badge.className = 'badge badge-divulgada';
       badge.style.marginLeft = '0.5rem';
       badge.classList.remove('hidden');
-      aplicarFlagsLoja(lojaDetectada);
     } else {
       badge.classList.add('hidden');
-      aplicarFlagsLoja(null);
-    }
-  }
-
-  function aplicarFlagsLoja(nomeLoja) {
-    $('flag-shopee').classList.toggle('hidden', nomeLoja !== 'Shopee');
-    $('flag-amazon-programe').classList.toggle('hidden', nomeLoja !== 'Amazon');
-    $('flag-amazon-prime').classList.toggle('hidden', nomeLoja !== 'Amazon');
-
-    if (nomeLoja !== 'Shopee') $('incluirCuponsShopee').checked = false;
-    if (nomeLoja !== 'Amazon') {
-      $('incluirProgramePoupe').checked = false;
-      $('incluirPrime').checked = false;
     }
   }
 
@@ -80,12 +66,6 @@ const CurioForm = (() => {
         if (!$('produto').value) $('produto').value = titulo;
       }
 
-      const ogImage = doc.querySelector('meta[property="og:image"]');
-      if (ogImage && !$('imagemUrl').value) {
-        $('imagemUrl').value = ogImage.getAttribute('content');
-        $('imagemUrl').dispatchEvent(new Event('input'));
-      }
-
       let preco = null;
       const ogPrice = doc.querySelector('meta[property="product:price:amount"]');
       if (ogPrice) preco = parseFloat(ogPrice.getAttribute('content'));
@@ -105,7 +85,7 @@ const CurioForm = (() => {
       CurioUtils.toast('Busca concluída! Confira os dados.', 'sucesso');
     } catch (err) {
       console.warn(err);
-      CurioUtils.toast('Site bloqueou a busca. Preencha manualmente ou cole a imagem.', 'aviso');
+      CurioUtils.toast('Site bloqueou a busca. Preencha manualmente.', 'aviso');
     } finally {
       btn.disabled = false;
       btn.innerHTML = original;
@@ -126,16 +106,6 @@ const CurioForm = (() => {
     }
   }
 
-  // ---------- PREVIEW IMAGEM ----------
-  function bindPreview() {
-    $('imagemUrl').addEventListener('input', () => {
-      const url = $('imagemUrl').value.trim();
-      const preview = $('preview-imagem');
-      if (!url) { preview.innerHTML = ''; return; }
-      preview.innerHTML = `<img src="${CurioUtils.escapeHtml(url)}" alt="preview" style="max-width:200px;max-height:120px;border-radius:var(--raio-sm);border:1px solid var(--cinza-borda);" onerror="this.style.display='none'">`;
-    });
-  }
-
   // ---------- SUBMIT (GERAR E SALVAR) ----------
   async function onSubmit(e) {
     e.preventDefault();
@@ -150,6 +120,7 @@ const CurioForm = (() => {
     if (!linkOferta || !CurioUtils.validarUrl(linkOferta)) { CurioUtils.toast('Link inválido.', 'erro'); return; }
     if (!produto) { CurioUtils.toast('Informe o título.', 'erro'); return; }
     if (!precoPromocional || precoPromocional <= 0) { CurioUtils.toast('Preço atual inválido.', 'erro'); return; }
+    if (precoOriginal > 0 && precoOriginal < precoPromocional) { CurioUtils.toast('O Preço Antigo não pode ser menor que o Atual.', 'erro'); return; }
     if (!categoriaId) { CurioUtils.toast('Selecione uma categoria.', 'erro'); return; }
     if (!templateId) { CurioUtils.toast('Selecione um template.', 'erro'); return; }
 
@@ -165,7 +136,7 @@ const CurioForm = (() => {
 
       const dados = {
         produto,
-        imagemUrl: $('imagemUrl').value.trim(),
+        imagemUrl: '', // Removido do form, salva vazio
         descricao: '',
         precoOriginal: precoOriginal || precoPromocional,
         precoPromocional,
@@ -182,9 +153,10 @@ const CurioForm = (() => {
         precoPix: $('isPix').checked ? precoPromocional : null,
         cupom: $('cupom').value.trim().toUpperCase() || '',
         precoComCupom: parseFloat($('precoComCupom').value) || null,
-        incluirCuponsShopee: $('incluirCuponsShopee').checked,
-        incluirProgramePoupe: $('incluirProgramePoupe').checked,
-        incluirPrime: $('incluirPrime').checked,
+        // Flags removidas do HTML, salvando false por padrão
+        incluirCuponsShopee: false, 
+        incluirProgramePoupe: false,
+        incluirPrime: false,
         comentarioPessoal: $('comentarioPessoal').value.trim()
       };
 
@@ -217,18 +189,11 @@ const CurioForm = (() => {
     $('precoOriginal').value = '';
     $('cupom').value = '';
     $('precoComCupom').value = '';
-    $('imagemUrl').value = '';
     $('categoria').value = '';
-    
     $('isPix').checked = false;
-    $('incluirCuponsShopee').checked = false;
-    $('incluirProgramePoupe').checked = false;
-    $('incluirPrime').checked = false;
 
     $('resultado-area').classList.add('hidden');
-    $('preview-imagem').innerHTML = '';
     $('badge-loja-detectada').classList.add('hidden');
-    aplicarFlagsLoja(null);
 
     const btn = $('btn-gerar');
     btn.disabled = false;
@@ -236,7 +201,6 @@ const CurioForm = (() => {
     textoGerado = "";
     lojaDetectada = null;
 
-    // Mantém o template atual selecionado, mas volta para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => $('linkOferta').focus(), 300);
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -302,7 +266,6 @@ const CurioForm = (() => {
         };
       });
 
-      bindPreview();
       bindResultActions();
       $('form-promocao').addEventListener('submit', onSubmit);
 
