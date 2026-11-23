@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (BLINDAGEM TOTAL)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (BLINDADO)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -9,7 +9,7 @@ const CurioForm = (() => {
   let templates = [];
   let lojaDetectada = null;
   let textoGerado = "";
-  let inicializado = false; // Evita rodar duas vezes
+  let inicializado = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -28,18 +28,17 @@ const CurioForm = (() => {
 
   function atualizarBadgeLoja() {
     const badge = $('badge-loja-detectada');
+    if (!badge) return;
     const url = $('linkOferta') ? $('linkOferta').value : '';
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (badge) {
-      if (url && lojaDetectada !== 'Outras') {
-        badge.textContent = lojaDetectada;
-        badge.className = 'badge badge-divulgada';
-        badge.style.marginLeft = '0.5rem';
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
+    if (url && lojaDetectada !== 'Outras') {
+      badge.textContent = lojaDetectada;
+      badge.className = 'badge badge-divulgada';
+      badge.style.marginLeft = '0.5rem';
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
     }
   }
 
@@ -172,80 +171,89 @@ const CurioForm = (() => {
 
   // ---------- RESETAR ----------
   function resetarFormulario() {
-    $('linkOferta').value = ''; $('produto').value = ''; $('comentarioPessoal').value = '';
-    $('precoPromocional').value = ''; $('precoOriginal').value = ''; $('cupom').value = ''; $('precoComCupom').value = '';
-    $('categoria').value = ''; $('isPix').checked = false;
-    $('resultado-area').classList.add('hidden'); $('badge-loja-detectada').classList.add('hidden');
+    if($('linkOferta')) $('linkOferta').value = ''; 
+    if($('produto')) $('produto').value = ''; 
+    if($('comentarioPessoal')) $('comentarioPessoal').value = '';
+    if($('precoPromocional')) $('precoPromocional').value = ''; 
+    if($('precoOriginal')) $('precoOriginal').value = ''; 
+    if($('cupom')) $('cupom').value = ''; 
+    if($('precoComCupom')) $('precoComCupom').value = '';
+    if($('categoria')) $('categoria').value = ''; 
+    if($('isPix')) $('isPix').checked = false;
+    if($('resultado-area')) $('resultado-area').classList.add('hidden'); 
+    if($('badge-loja-detectada')) $('badge-loja-detectada').classList.add('hidden');
 
     const btn = $('btn-gerar');
-    btn.disabled = false; btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
+    if(btn) {
+      btn.disabled = false; 
+      btn.innerHTML = '<i data-lucide="sparkles"></i> Gerar e Salvar Anúncio';
+    }
     textoGerado = ""; lojaDetectada = null;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => $('linkOferta').focus(), 300);
+    setTimeout(() => { if($('linkOferta')) $('linkOferta').focus(); }, 300);
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   // ---------- AÇÕES PÓS-GERAÇÃO ----------
   function bindResultActions() {
-    $('btn-copiar').onclick = async () => {
-      if (!textoGerado) return;
-      const ok = await CurioUtils.copiarTexto(textoGerado);
-      if (ok) {
-        CurioUtils.toast('Copiado! Limpando para o próximo...', 'sucesso');
-        setTimeout(resetarFormulario, 300);
-      }
-    };
+    if ($('btn-copiar')) {
+      $('btn-copiar').onclick = async () => {
+        if (!textoGerado) return;
+        const ok = await CurioUtils.copiarTexto(textoGerado);
+        if (ok) {
+          CurioUtils.toast('Copiado! Limpando para o próximo...', 'sucesso');
+          setTimeout(resetarFormulario, 300);
+        }
+      };
+    }
 
-    $('btn-whatsapp').onclick = () => {
-      if (!textoGerado) return;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textoGerado)}`, '_blank');
-      setTimeout(resetarFormulario, 500);
-    };
+    if ($('btn-whatsapp')) {
+      $('btn-whatsapp').onclick = () => {
+        if (!textoGerado) return;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textoGerado)}`, '_blank');
+        setTimeout(resetarFormulario, 500);
+      };
+    }
   }
 
   // ---------- INIT ----------
   async function init() {
-    if (inicializado) return; // Evita rodar duas vezes
+    // Se não encontrar o select na página, significa que não é a página do formulário. Aborta!
+    if (!$('categoria') || !$('select-template')) return;
+
+    if (inicializado) return;
     inicializado = true;
 
     try {
-      // Carrega os dados
       categorias = await CurioDB.listarCategorias();
       lojas = await CurioDB.listarLojas();
       templates = await CurioDB.listarTemplates();
 
-      // Preenche Categorias
       const selCat = $('categoria');
-      if (selCat) {
-        selCat.innerHTML = '<option value="">Selecione...</option>';
-        categorias.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.nome;
-          selCat.appendChild(opt);
-        });
-      }
+      selCat.innerHTML = '<option value="">Selecione...</option>';
+      categorias.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.nome;
+        selCat.appendChild(opt);
+      });
 
-      // Preenche Templates
       const selTpl = $('select-template');
-      if (selTpl) {
-        selTpl.innerHTML = '';
-        if (templates.length === 0) {
-          selTpl.innerHTML = '<option value="">Nenhum template.</option>';
-        } else {
-          templates.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.id;
-            opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
-            selTpl.appendChild(opt);
-          });
-          const padraoT = templates.find(t => t.padrao) || templates[0];
-          if (padraoT) selTpl.value = padraoT.id;
-        }
+      selTpl.innerHTML = '';
+      if (templates.length === 0) {
+        selTpl.innerHTML = '<option value="">Nenhum template.</option>';
+      } else {
+        templates.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.nome + (t.padrao ? ' ⭐' : '');
+          selTpl.appendChild(opt);
+        });
+        const padraoT = templates.find(t => t.padrao) || templates[0];
+        if (padraoT) selTpl.value = padraoT.id;
       }
 
-      // Eventos
       if ($('linkOferta')) $('linkOferta').addEventListener('input', atualizarBadgeLoja);
       if ($('btn-colar-link')) $('btn-colar-link').onclick = colarLink;
       if ($('btn-buscar-dados')) $('btn-buscar-dados').onclick = buscarDadosLink;
@@ -262,25 +270,13 @@ const CurioForm = (() => {
       if ($('form-promocao')) $('form-promocao').addEventListener('submit', onSubmit);
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
-      console.log("✅ Formulário montado com sucesso!");
+      console.log("✅ Formulário montado!");
 
     } catch (e) {
       console.error("Erro no init:", e);
-      inicializado = false; // Permite tentar de novo se falhar
+      inicializado = false;
     }
   }
 
   return { init };
 })();
-
-// Auto-inicialização para garantir que carregue, mesmo se o HTML falhar em chamar.
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (!document.getElementById('categoria').innerHTML.includes('option value="')) {
-      console.log("Auto-inicializando o formulário...");
-      if (typeof CurioForm !== 'undefined' && CurioForm.init) {
-        CurioForm.init();
-      }
-    }
-  }, 600);
-});
