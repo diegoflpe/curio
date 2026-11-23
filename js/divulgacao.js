@@ -1,6 +1,5 @@
 /* ============================================================
    CURIÓ PROMOS — MOTOR DE DIVULGAÇÃO
-   Gera mensagens a partir de templates + dados de promoção.
    ============================================================ */
 
 const CurioDivulgacao = (() => {
@@ -36,12 +35,15 @@ https://link.amazon/B09yJ3i1Z`
   }
 
   function dadosDaPromocao(p) {
+    // Se não tem preço original válido, enviamos vazio para o template
+    const temDesconto = p.precoOriginal && p.precoOriginal > p.precoPromocional;
+    
     return {
       produto: p.produto || '',
-      preco_original: CurioUtils.formatarMoeda(p.precoOriginal),
+      preco_original: temDesconto ? CurioUtils.formatarMoeda(p.precoOriginal) : '',
+      preco_original_tachado: temDesconto ? tacharTexto(CurioUtils.formatarMoeda(p.precoOriginal)) : '',
       preco_promocional: CurioUtils.formatarMoeda(p.precoPromocional),
-      preco_original_tachado: tacharTexto(CurioUtils.formatarMoeda(p.precoOriginal)),
-      desconto: p.desconto || 0,
+      desconto: temDesconto ? `${p.desconto}% OFF 🔥` : '', // Limpa o desconto se não houver
       loja: p.lojaNome || '',
       link: p.linkAfiliado || p.linkOferta || '',
       descricao: p.descricao || '',
@@ -57,8 +59,8 @@ https://link.amazon/B09yJ3i1Z`
     let msg = aplicarVariaveis(templateConteudo, dadosDaPromocao(promocao));
 
     // 1. Remove a frase final do template (para não ficar no meio do texto)
-    const fraseFinal = "⚡ Aproveite! Condição especial por tempo limitado.";
-    msg = msg.replace(fraseFinal, '').trim();
+    const fraseFinalBase = "⚡ Aproveite! Condição especial por tempo limitado.";
+    msg = msg.replace(fraseFinalBase, '').trim();
 
     // 2. Se o template NÃO contém {comentario}, adiciona no topo
     if (promocao.comentarioPessoal && !templateConteudo.includes('{comentario}')) {
@@ -84,7 +86,6 @@ https://link.amazon/B09yJ3i1Z`
     // 4. Complementos por loja
     const loja = (promocao.lojaNome || '').toLowerCase();
     
-    // Ajuste do link da Shopee
     if (loja.includes('shopee')) {
       const linkFormatado = promocao.linkAfiliado || promocao.linkOferta;
       if (msg.includes(`👉 ${linkFormatado}`)) {
@@ -92,23 +93,20 @@ https://link.amazon/B09yJ3i1Z`
       } else if (msg.includes(linkFormatado)) {
         msg = msg.replace(linkFormatado, `Compre aqui 👇\n${linkFormatado}`);
       }
-
-      if (promocao.incluirCuponsShopee) {
-        msg += `\n\n${TEXTOS.shopeeCupons}`;
-      }
+      if (promocao.incluirCuponsShopee) msg += `\n\n${TEXTOS.shopeeCupons}`;
     }
     
     if (loja.includes('amazon')) {
-      if (promocao.incluirProgramePoupe) {
-        msg += `\n\n${TEXTOS.amazonPrograme}`;
-      }
-      if (promocao.incluirPrime) {
-        msg += `\n\n${TEXTOS.amazonPrime}`;
-      }
+      if (promocao.incluirProgramePoupe) msg += `\n\n${TEXTOS.amazonPrograme}`;
+      if (promocao.incluirPrime) msg += `\n\n${TEXTOS.amazonPrime}`;
     }
 
-    // 5. Adiciona a frase final novamente no final de TUDO
-    msg += `\n\n${fraseFinal}`;
+    // 5. Adiciona a frase final com Negrito e Itálico do WhatsApp (_*texto*_)
+    const fraseFinalFormatada = `_*⚡ Aproveite! Condição especial por tempo limitado.*_`;
+    msg += `\n\n${fraseFinalFormatada}`;
+
+    // 6. Limpeza final: remove linhas em branco que sobraram se não houver preço antigo
+    msg = msg.replace(/\n{3,}/g, '\n\n');
 
     return msg.trim();
   }
@@ -122,13 +120,5 @@ https://link.amazon/B09yJ3i1Z`
     return CurioUtils.copiarTexto(mensagem);
   }
 
-  return {
-    TEXTOS,
-    tacharTexto,
-    aplicarVariaveis,
-    dadosDaPromocao,
-    gerar,
-    abrirWhatsApp,
-    copiar
-  };
+  return { TEXTOS, tacharTexto, aplicarVariaveis, dadosDaPromocao, gerar, abrirWhatsApp, copiar };
 })();
