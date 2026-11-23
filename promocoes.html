@@ -120,10 +120,10 @@
       document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
       document.getElementById('btn-logout').onclick = () => CurioAuth.logout();
       
-      // Volta a chamar o init aqui, agora com a garantia de que o usuário está logado
-      await CurioForm.init();
+      await CurioPromocoes.init();
     });
   </script>
 </body>
 
 </html>
+
