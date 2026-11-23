@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (TENTATIVA INFINITA)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (COMPLETO)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -50,11 +50,11 @@ const CurioForm = (() => {
       carregado = true;
     } catch (error) {
       console.warn("Aguardando banco de dados...", error);
-      setTimeout(carregarSelects, 1500); // Tenta de novo em 1,5s
+      setTimeout(carregarSelects, 1500);
     }
   }
 
-  // ---------- DETECÇÃO DE LOJA ----------
+  // ---------- DETECÇÃO DE LOJA E FLAGS ----------
   function detectarLojaPorUrl(url) {
     const u = (url || '').toLowerCase().trim();
     if (!u) return null;
@@ -65,6 +65,23 @@ const CurioForm = (() => {
     if (u.includes('aliexpress')) return 'AliExpress';
     if (u.includes('casasbahia')) return 'Casas Bahia';
     return 'Outras';
+  }
+
+  function aplicarFlagsLoja(nomeLoja) {
+    const flagShopee = $('flag-shopee');
+    const flagPrograme = $('flag-amazon-programe');
+    const flagPrime = $('flag-amazon-prime');
+    if (!flagShopee) return;
+
+    flagShopee.classList.toggle('hidden', nomeLoja !== 'Shopee');
+    flagPrograme.classList.toggle('hidden', nomeLoja !== 'Amazon');
+    flagPrime.classList.toggle('hidden', nomeLoja !== 'Amazon');
+
+    if (nomeLoja !== 'Shopee') $('incluirCuponsShopee').checked = false;
+    if (nomeLoja !== 'Amazon') {
+      $('incluirProgramePoupe').checked = false;
+      $('incluirPrime').checked = false;
+    }
   }
 
   function atualizarBadgeLoja() {
@@ -78,8 +95,10 @@ const CurioForm = (() => {
         badge.className = 'badge badge-divulgada';
         badge.style.marginLeft = '0.5rem';
         badge.classList.remove('hidden');
+        aplicarFlagsLoja(lojaDetectada);
       } else {
         badge.classList.add('hidden');
+        aplicarFlagsLoja(null);
       }
     }
   }
@@ -187,7 +206,12 @@ const CurioForm = (() => {
         linkOferta, linkAfiliado: linkOferta, dataValidade: null, observacoes: '',
         status: 'pendente', precoPix: $('isPix').checked ? precoPromocional : null,
         cupom: $('cupom').value.trim().toUpperCase() || '', precoComCupom: parseFloat($('precoComCupom').value) || null,
-        incluirCuponsShopee: false, incluirProgramePoupe: false, incluirPrime: false,
+        
+        // SALVANDO AS FLAGS AGORA
+        incluirCuponsShopee: $('incluirCuponsShopee') ? $('incluirCuponsShopee').checked : false,
+        incluirProgramePoupe: $('incluirProgramePoupe') ? $('incluirProgramePoupe').checked : false,
+        incluirPrime: $('incluirPrime') ? $('incluirPrime').checked : false,
+        
         comentarioPessoal: $('comentarioPessoal').value.trim()
       };
 
@@ -222,6 +246,12 @@ const CurioForm = (() => {
     if($('precoComCupom')) $('precoComCupom').value = '';
     if($('categoria')) $('categoria').value = ''; 
     if($('isPix')) $('isPix').checked = false;
+    
+    if($('incluirCuponsShopee')) $('incluirCuponsShopee').checked = false;
+    if($('incluirProgramePoupe')) $('incluirProgramePoupe').checked = false;
+    if($('incluirPrime')) $('incluirPrime').checked = false;
+    aplicarFlagsLoja(null);
+
     if($('resultado-area')) $('resultado-area').classList.add('hidden'); 
     if($('badge-loja-detectada')) $('badge-loja-detectada').classList.add('hidden');
 
@@ -275,13 +305,9 @@ const CurioForm = (() => {
 
   // ---------- INIT ----------
   async function init() {
-    // Se não estiver na página do formulário, não faz nada
     if (!$('categoria') || !$('select-template')) return;
-
-    // Inicia a tentativa de pegar os dados
-    carregarSelects();
     
-    // Liga os botões
+    await carregarSelects();
     bindEventos();
     
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -290,10 +316,9 @@ const CurioForm = (() => {
   return { init };
 })();
 
-// AUTO-INICIALIZAR: Roda assim que a página carregar, sem depender do HTML chamar
+// Auto-inicializar caso a página não chame
 window.addEventListener('load', () => {
-  // Dá 1 segundo de margem para o Firebase checar o login
   setTimeout(() => {
-    CurioForm.init();
+    if (!carregado && window.CurioForm) CurioForm.init();
   }, 1000);
 });
