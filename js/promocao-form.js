@@ -272,23 +272,35 @@ const CurioForm = (() => {
 
   // ---------- EVENTOS DA TELA ----------
   function bindEventos() {
-    if ($('btn-copiar')) {
+        if ($('btn-copiar')) {
       $('btn-copiar').onclick = async () => {
         if (!textoGerado) return;
         
         const ok = await CurioUtils.copiarTexto(textoGerado);
         
         if (ok) {
-          // AQUI: Atualiza diretamente no Firebase o campo status para "divulgada"
           if (idPromocaoCriada) {
             try {
+              // 1. Atualiza o status da promoção
               await db.collection('promocoes').doc(idPromocaoCriada).update({ status: 'divulgada' });
+              
+              // 2. SALVA NO HISTÓRICO (Para aparecer nos relatórios!)
+              await CurioDB.registrarDivulgacao({
+                promocaoId: idPromocaoCriada,
+                produto: $('produto').value.trim(),
+                linkUtilizado: $('linkOferta').value.trim(),
+                templateId: $('select-template').value,
+                templateNome: $('select-template').options[$('select-template').selectedIndex].text,
+                mensagemGerada: textoGerado,
+                status: 'copiado'
+              });
+              
             } catch (e) {
-              console.warn("Erro ao atualizar status:", e);
+              console.warn("Erro ao registrar:", e);
             }
           }
 
-          CurioUtils.toast('Copiado! Promoção marcada como divulgada.', 'sucesso');
+          CurioUtils.toast('Copiado! Promoção divulgada e salva no histórico.', 'sucesso');
           setTimeout(resetarFormulario, 300);
         }
       };
