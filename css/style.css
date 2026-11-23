@@ -384,3 +384,13 @@ body.dark-mode .badge-expirada { background: rgba(153, 27, 27, 0.3); color: #FCA
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ---------- CARD DE ÚLTIMAS PROMOÇÕES ---------- */
+#ultimas-promocoes {
+  display: flex;
+  flex-direction: column;
+}
+
+#ultimas-promocoes > div:last-child {
+  border-bottom: none !important;
+}

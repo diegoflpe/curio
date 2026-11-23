@@ -2,18 +2,16 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Dashboard — Curió Promos</title>
-
-  <!-- PWA / App Mobile -->
+  <link rel="icon" type="image/png" href="assets/img/curio.png">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Curió Promos">
   <link rel="apple-touch-icon" href="assets/img/curio.png">
   <meta name="theme-color" content="#0F2A4A">
-
-  <link rel="icon" type="image/png" href="assets/img/curio.png">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,12 +21,10 @@
 <body>
 
   <div class="app-layout">
-
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-          <img src="assets/img/curio.png" alt="Curió Promos">
-
+        <img src="assets/img/curio.png" alt="Curió Promos">
       </div>
 
       <nav class="sidebar-nav">
@@ -55,7 +51,7 @@
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- Main -->
+    <!-- Main Content -->
     <div class="main-content">
       <header class="topbar">
         <div class="topbar-left">
@@ -66,7 +62,7 @@
         </div>
         <div class="topbar-actions">
           <a href="promocao-form.html" class="btn btn-primary btn-sm">
-            <i data-lucide="plus"></i> Nova promoção
+            <i data-lucide="plus"></i> Gerar Oferta
           </a>
         </div>
       </header>
@@ -79,7 +75,7 @@
           </div>
         </div>
 
-        <!-- Cards de métricas -->
+        <!-- CARDS DE MÉTRICAS -->
         <div class="cards-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
           <div class="card">
             <div class="card-title">Total de promoções</div>
@@ -109,29 +105,61 @@
             <div class="card-title">Categorias</div>
             <div class="card-value" id="card-categorias">—</div>
           </div>
+          <div class="card">
+            <div class="card-title">Divulgações</div>
+            <div class="card-value" id="card-divulgacoes" style="color:#0E7490;">—</div>
+          </div>
         </div>
 
-        <!-- Gráficos + últimas -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;" class="cards-grid">
+        <!-- GRÁFICOS (LINHA 1) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;" class="cards-grid">
           <div class="card">
-            <h3 style="margin-bottom:1rem;font-size:1rem;">Promoções por categoria</h3>
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Promoções por Categoria</h3>
             <div id="grafico-categorias">
               <div class="loading-overlay"><div class="spinner"></div></div>
             </div>
           </div>
+          <div class="card">
+            <h3 style="margin-bottom:1rem;font-size:1rem;">Promoções por Loja</h3>
+            <div id="grafico-lojas">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRÁFICO (LINHA 2) e ÚLTIMAS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;" class="cards-grid">
           <div class="card">
             <h3 style="margin-bottom:1rem;font-size:1rem;">Cadastros nos últimos 7 dias</h3>
             <div id="grafico-periodo">
               <div class="loading-overlay"><div class="spinner"></div></div>
             </div>
           </div>
+          <div class="card">
+            <h3 style="margin-bottom:0.5rem;font-size:1rem;">Últimas promoções cadastradas</h3>
+            <div id="ultimas-promocoes">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
         </div>
 
-        <div class="card">
-          <h3 style="margin-bottom:0.5rem;font-size:1rem;">Últimas promoções cadastradas</h3>
-          <div id="ultimas-promocoes">
-            <div class="loading-overlay"><div class="spinner"></div></div>
+        <!-- LINKS DE MÉTRICAS -->
+        <div class="card" style="margin-top:1.5rem;">
+          <h3 style="margin-bottom:1rem;font-size:1rem;">Acompanhar Métricas de Afiliado</h3>
+          <div class="flex gap-sm" style="flex-wrap:wrap;">
+            <a href="https://www.mercadolivre.com.br/afiliados/hub?is_affiliate=true#menu-user" target="_blank" rel="noopener" class="btn btn-outline" style="flex:1;">
+              <i data-lucide="bar-chart-3"></i> Mercado Livre
+            </a>
+            <a href="https://affiliate.shopee.com.br/" target="_blank" rel="noopener" class="btn btn-outline" style="flex:1;">
+              <i data-lucide="bar-chart-3"></i> Shopee
+            </a>
+            <a href="https://associados.amazon.com.br/" target="_blank" rel="noopener" class="btn btn-outline" style="flex:1;">
+              <i data-lucide="bar-chart-3"></i> Amazon
+            </a>
           </div>
+          <p class="text-small text-muted" style="margin-top:0.75rem;">
+            Os links abrem os painéis oficiais de cada programa de afiliados em uma nova aba.
+          </p>
         </div>
       </main>
     </div>
@@ -144,13 +172,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/seed.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/dashboard.js"></script>
+  
+  <script src="js/firebase-config.js?v=12"></script>
+  <script src="js/utils.js?v=12"></script>
+  <script src="js/auth.js?v=12"></script>
+  <script src="js/db.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
+  <script src="js/dashboard.js?v=12"></script>
+  
   <script>
     CurioAuth.protegerPagina().then(async (user) => {
       if (!user) return;

@@ -1,32 +1,42 @@
 /* ============================================================
-   CURIÓ PROMOS — LOJAS
-   CRUD completo com proteção contra exclusão em uso.
+   CURIÓ PROMOS — LOJAS (CONTAGEM INTELIGENTE)
    ============================================================ */
 
 const CurioLojas = (() => {
 
   let lojas = [];
   let editandoId = null;
-  let contagemPromocoesPorLoja = {};
+  let promocoesGlobais = [];
 
   function $(id) { return document.getElementById(id); }
 
-  // ---------- CONTAGEM DE USO ----------
+  // ---------- CONTAGEM DE USO (INTELIGENTE) ----------
   async function carregarContagemUso() {
     try {
-      const promocoes = await CurioDB.listarPromocoes();
-      contagemPromocoesPorLoja = {};
-      promocoes.forEach(p => {
-        const key = p.lojaId || '_sem_id_';
-        contagemPromocoesPorLoja[key] = (contagemPromocoesPorLoja[key] || 0) + 1;
-      });
+      promocoesGlobais = await CurioDB.listarPromocoes();
     } catch (e) {
-      console.warn('Erro ao contar uso de lojas:', e);
+      console.warn('Erro ao listar promoções:', e);
     }
   }
 
-  function usoLoja(lojaId) {
-    return contagemPromocoesPorLoja[lojaId] || 0;
+  function usoLoja(loja) {
+    let count = 0;
+    const nome = loja.nome.toLowerCase();
+
+    promocoesGlobais.forEach(p => {
+      let lojaP = p.lojaNome || 'Outras';
+      const link = (p.linkAfiliado || p.linkOferta || '').toLowerCase();
+
+      // Se estiver como "Outras", descobre pelo link
+      if (lojaP === 'Outras' || !lojaP) {
+        if (link.includes('mercadolivre') || link.includes('meli.la') || link.includes('mercl')) lojaP = 'Mercado Livre';
+        else if (link.includes('shopee')) lojaP = 'Shopee';
+        else if (link.includes('amazon') || link.includes('amzn')) lojaP = 'Amazon';
+      }
+
+      if (lojaP.toLowerCase() === nome) count++;
+    });
+    return count;
   }
 
   // ---------- RENDER ----------
@@ -43,7 +53,7 @@ const CurioLojas = (() => {
       container.innerHTML = `
         <div class="card">
           <div class="empty-state">
-            <i data-lucide="store" style="width:48px;height:48px;margin:0 auto 1rem;color:#CBD5E1;"></i>
+            <i data-lucide="store" style="width:48px;height:48px;margin:0 auto 1rem;color:var(--text-muted);"></i>
             <h3>Nenhuma loja</h3>
             <p>Cadastre a primeira loja para vincular às promoções.</p>
           </div>
@@ -65,7 +75,7 @@ const CurioLojas = (() => {
             </thead>
             <tbody>
               ${lojas.map(l => {
-                const uso = usoLoja(l.id);
+                const uso = usoLoja(l);
                 const bloqueado = uso > 0;
                 return `
                   <tr>
@@ -80,7 +90,7 @@ const CurioLojas = (() => {
                         <button class="btn btn-ghost btn-sm btn-editar" data-id="${l.id}" data-nome="${CurioUtils.escapeHtml(l.nome)}" title="Editar">
                           <i data-lucide="pencil" style="width:14px;height:14px;"></i>
                         </button>
-                        <button class="btn btn-ghost btn-sm btn-excluir" data-id="${l.id}" data-nome="${CurioUtils.escapeHtml(l.nome)}" data-uso="${uso}" title="${bloqueado ? 'Loja em uso — não pode ser excluída' : 'Excluir'}" style="color:${bloqueado ? '#CBD5E1' : 'var(--vermelho)'};" ${bloqueado ? 'disabled' : ''}>
+                        <button class="btn btn-ghost btn-sm btn-excluir" data-id="${l.id}" data-nome="${CurioUtils.escapeHtml(l.nome)}" data-uso="${uso}" title="${bloqueado ? 'Loja em uso — não pode ser excluída' : 'Excluir'}" style="color:${bloqueado ? '#CBD5E1' : '#EF4444'};" ${bloqueado ? 'disabled' : ''}>
                           <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
                         </button>
                       </div>
@@ -148,9 +158,7 @@ const CurioLojas = (() => {
       return;
     }
 
-    const duplicada = lojas.some(l =>
-      l.nome.toLowerCase() === nome.toLowerCase() && l.id !== editandoId
-    );
+    const duplicada = lojas.some(l => l.nome.toLowerCase() === nome.toLowerCase() && l.id !== editandoId);
     if (duplicada) {
       CurioUtils.toast('Já existe uma loja com esse nome.', 'aviso');
       return;

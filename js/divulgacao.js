@@ -14,7 +14,7 @@ const CurioDivulgacao = (() => {
     return String(texto).split('').map(c => c + '\u0336').join('');
   }
 
-  function gerar(templateConteudo, promocao) {
+    function gerar(templateConteudo, promocao) {
     const temDesconto = promocao.precoOriginal && promocao.precoOriginal > promocao.precoPromocional;
     const link = promocao.linkAfiliado || promocao.linkOferta || '';
     const loja = (promocao.lojaNome || '').toLowerCase();
@@ -28,28 +28,18 @@ const CurioDivulgacao = (() => {
 
     // --- 2. BLOCO DE PREÇOS ---
     msg += `\n\n`;
-    
-    // Linha de Preço Antigo
     if (temDesconto) {
       msg += `❌ De: ${tacharTexto(CurioUtils.formatarMoeda(promocao.precoOriginal))}\n`;
     }
-
-    // Linha de Preço Promocional com Pix e Desconto
     let linhaPromocional = `✅ Por: ${CurioUtils.formatarMoeda(promocao.precoPromocional)}`;
-    
-    if (promocao.precoPix) {
-      linhaPromocional += ` no Pix 💠`;
-    }
-    
-    if (temDesconto) {
-      linhaPromocional += ` (${promocao.desconto}% OFF 🔥)`;
-    }
-    
+    if (promocao.precoPix) linhaPromocional += ` no Pix 💠`;
+    if (temDesconto) linhaPromocional += ` (${promocao.desconto}% OFF 🔥)`;
     msg += `${linhaPromocional}\n`;
 
     // --- 3. LINK E COMPLEMENTOS DA LOJA ---
     msg += `\n`;
     if (loja.includes('shopee')) {
+      // AQUI ESTÁ O AJUSTE: Força "Compre aqui 👇" antes do link
       msg += `Compre aqui 👇\n${link}\n`;
       if (promocao.incluirCuponsShopee) {
         msg += `\n${TEXTOS.shopeeCupons}\n`;
