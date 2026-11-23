@@ -1,5 +1,5 @@
 /* ============================================================
-   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO DEFINITIVA)
+   CURIÓ PROMOS — GERADOR DE OFERTAS (VERSÃO FINAL)
    ============================================================ */
 
 const CurioForm = (() => {
@@ -30,15 +30,13 @@ const CurioForm = (() => {
     const url = $('linkOferta').value;
     lojaDetectada = detectarLojaPorUrl(url);
 
-    if (badge) {
-      if (url && lojaDetectada !== 'Outras') {
-        badge.textContent = lojaDetectada;
-        badge.className = 'badge badge-divulgada';
-        badge.style.marginLeft = '0.5rem';
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
+    if (url && lojaDetectada !== 'Outras') {
+      badge.textContent = lojaDetectada;
+      badge.className = 'badge badge-divulgada';
+      badge.style.marginLeft = '0.5rem';
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
     }
   }
 
@@ -259,25 +257,20 @@ const CurioForm = (() => {
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
       
-      console.log("✅ Selects preenchidos na tela com sucesso.");
-
     } catch (e) {
       console.error("❌ Erro no init:", e);
-      // Alerta para vermos o erro real
       alert("Erro ao montar tela: " + e.message);
     }
   }
 
-  // ---------- EXPOSIÇÃO GLOBAL ----------
-  // Força a inicialização quando o HTML estiver pronto, burlando qualquer falha no arquivo HTML.
+  // ---------- AUTO-INICIALIZAÇÃO ----------
+  // Assim que a página carregar, espera o HTML estar pronto e inicializa sozinho.
   document.addEventListener('DOMContentLoaded', () => {
+    // Um pequeno delay para garantir que o Firebase Auth liberou a tela
     setTimeout(() => {
-      // Verifica se o CurioAuth já liberou a tela
-      if (firebase.auth().currentUser) {
-        init();
-      }
-    }, 800); 
+      init();
+    }, 500); 
   });
 
-  return { init };
+  return { init }; // Deixa exposto caso queira chamar manualmente em outro lugar
 })();
