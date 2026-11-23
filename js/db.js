@@ -249,21 +249,18 @@ const CurioDB = (() => {
     const tplSnap = await db.collection('templates').limit(1).get();
     if (tplSnap.empty) {
       const modelos = [
-        {
+                {
           nome: '🐦 Padrão Curió Promos',
           padrao: true,
           conteudo: `{comentario}
 
 🐦 {produto}
 
-❌ De: {preco_original_tachado}
-✅ Por: {preco_promocional} ({desconto}% OFF 🔥)
+{preco_original_tachado}
+✅ Por: {preco_promocional} ({desconto})
 
-👉 {link}
-
-⚡ Aproveite! Condição especial por tempo limitado.`
-        }
-      ];
+👉 {link}`
+        },
       const batch = db.batch();
       modelos.forEach(m => batch.set(db.collection('templates').doc(), { ...m, criadoEm: firebase.firestore.FieldValue.serverTimestamp() }));
       await batch.commit();
