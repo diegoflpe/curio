@@ -75,6 +75,32 @@
             <p class="text-muted">Resumo das suas promoções em tempo real.</p>
           </div>
         </div>
+                <div class="page-header">
+          <div>
+            <h1>Visão geral</h1>
+            <p class="text-muted">Resumo das suas promoções em tempo real.</p>
+          </div>
+        </div>
+
+        <!-- FILTRO DE PERÍODO -->
+        <div class="card" style="margin-bottom:1.5rem; padding:1rem;">
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+              <label for="dash-data-inicio">Data Início</label>
+              <input type="date" id="dash-data-inicio" class="form-control">
+            </div>
+            <div class="form-group" style="margin-bottom:0; flex:1; min-width:150px;">
+              <label for="dash-data-fim">Data Fim</label>
+              <input type="date" id="dash-data-fim" class="form-control">
+            </div>
+            <button class="btn btn-primary" id="btn-filtrar-dashboard" style="margin-bottom:0;">
+              <i data-lucide="filter"></i> Filtrar
+            </button>
+            <button class="btn btn-outline" id="btn-limpar-filtro" title="Remover filtro">
+              <i data-lucide="x"></i> Limpar
+            </button>
+          </div>
+        </div>
 
         <!-- CARDS DE MÉTRICAS -->
         <div class="cards-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
