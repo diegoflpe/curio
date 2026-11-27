@@ -79,3 +79,26 @@
 @media (min-width: 1280px) {
   .page-content { padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
 }
+
+/* ---------- FILTRO DO DASHBOARD NO MOBILE ---------- */
+@media (max-width: 768px) {
+  /* Força o container do filtro a empilhar tudo */
+  .filtro-dashboard-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Faz os inputs e botões ocuparem 100% da largura */
+  .filtro-dashboard-container .form-group,
+  .filtro-dashboard-container button {
+    width: 100% !important;
+    min-width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Dá um respiro extra para os botões no mobile */
+  .filtro-dashboard-container button {
+    padding: 0.85rem !important;
+  }
+}
